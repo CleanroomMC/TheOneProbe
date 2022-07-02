@@ -74,9 +74,6 @@ dependencies {
     deobfCompile "curse.maven:redstoneflux-270789:2623090"
     deobfCompile "curse.maven:enderio1-64578:3328811"
     deobfCompile "curse.maven:endercore1-231868:2972849"
-    runtime files("E:/.minecraft/realmofstorms/source files/TOPAddons/build/libs/topaddons-1.12.2-1.13.0.jar")
-    runtime files("E:/.minecraft/realmofstorms/source files/TOPExtras-d24b82d30c58c71ed92556200b824c66366d522b/build/libs/topextras-1.12.2-1.0.1.jar")
-
 }
 
 jar {
