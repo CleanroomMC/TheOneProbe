@@ -6,36 +6,42 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 public class NetworkTools {
 
-    public static NBTTagCompound readNBT(ByteBuf dataIn) {
-        PacketBuffer buf = new PacketBuffer(dataIn);
+    @Nullable
+    public static NBTTagCompound readNBT(@Nonnull ByteBuf dataIn) {
         try {
-            return buf.readCompoundTag();
+            return new PacketBuffer(dataIn).readCompoundTag();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public static void writeNBT(ByteBuf dataOut, NBTTagCompound nbt) {
-        PacketBuffer buf = new PacketBuffer(dataOut);
+    public static void writeNBT(@Nonnull ByteBuf dataOut, @Nonnull NBTTagCompound nbt) {
         try {
-            buf.writeCompoundTag(nbt);
+            new PacketBuffer(dataOut).writeCompoundTag(nbt);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
-    /// This function supports itemstacks with more then 64 items.
-    public static ItemStack readItemStack(ByteBuf dataIn) {
+    /**
+     * This function supports ItemStacks with more then 64 items.
+     */
+    @Nonnull
+    public static ItemStack readItemStack(@Nonnull ByteBuf dataIn) {
         PacketBuffer buf = new PacketBuffer(dataIn);
         try {
             NBTTagCompound nbt = buf.readCompoundTag();
+            if (nbt == null) return ItemStack.EMPTY;
+
             ItemStack stack = new ItemStack(nbt);
             stack.setCount(buf.readInt());
             return stack;
@@ -45,8 +51,10 @@ public class NetworkTools {
         return ItemStack.EMPTY;
     }
 
-    /// This function supports itemstacks with more then 64 items.
-    public static void writeItemStack(ByteBuf dataOut, ItemStack itemStack) {
+    /**
+     * This function supports ItemStacks with more then 64 items.
+     */
+    public static void writeItemStack(@Nonnull ByteBuf dataOut, @Nonnull ItemStack itemStack) {
         PacketBuffer buf = new PacketBuffer(dataOut);
         NBTTagCompound nbt = new NBTTagCompound();
         itemStack.writeToNBT(nbt);
@@ -58,20 +66,18 @@ public class NetworkTools {
         }
     }
 
-    public static String readString(ByteBuf dataIn) {
+    @Nullable
+    public static String readString(@Nonnull ByteBuf dataIn) {
         int s = dataIn.readInt();
-        if (s == -1) {
-            return null;
-        }
-        if (s == 0) {
-            return "";
-        }
+        if (s == -1) return null;
+        if (s == 0) return "";
+
         byte[] dst = new byte[s];
         dataIn.readBytes(dst);
         return new String(dst);
     }
 
-    public static void writeString(ByteBuf dataOut, String str) {
+    public static void writeString(@Nonnull ByteBuf dataOut, @Nullable String str) {
         if (str == null) {
             dataOut.writeInt(-1);
             return;
@@ -83,42 +89,40 @@ public class NetworkTools {
         }
     }
 
-    public static String readStringUTF8(ByteBuf dataIn) {
+    @Nullable
+    public static String readStringUTF8(@Nonnull ByteBuf dataIn) {
         int s = dataIn.readInt();
-        if (s == -1) {
-            return null;
-        }
-        if (s == 0) {
-            return "";
-        }
+        if (s == -1) return null;
+        if (s == 0) return "";
         byte[] dst = new byte[s];
         dataIn.readBytes(dst);
-        return new String(dst, java.nio.charset.StandardCharsets.UTF_8);
+        return new String(dst, StandardCharsets.UTF_8);
     }
 
-    public static void writeStringUTF8(ByteBuf dataOut, String str) {
+    public static void writeStringUTF8(@Nonnull ByteBuf dataOut, @Nullable String str) {
         if (str == null) {
             dataOut.writeInt(-1);
             return;
         }
-        byte[] bytes = str.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
         dataOut.writeInt(bytes.length);
         if (bytes.length > 0) {
             dataOut.writeBytes(bytes);
         }
     }
 
-    public static BlockPos readPos(ByteBuf dataIn) {
+    @Nonnull
+    public static BlockPos readPos(@Nonnull ByteBuf dataIn) {
         return new BlockPos(dataIn.readInt(), dataIn.readInt(), dataIn.readInt());
     }
 
-    public static void writePos(ByteBuf dataOut, BlockPos pos) {
+    public static void writePos(@Nonnull ByteBuf dataOut, @Nonnull BlockPos pos) {
         dataOut.writeInt(pos.getX());
         dataOut.writeInt(pos.getY());
         dataOut.writeInt(pos.getZ());
     }
 
-    public static <T extends Enum<T>> void writeEnum(ByteBuf buf, T value, T nullValue) {
+    public static <T extends Enum<T>> void writeEnum(@Nonnull ByteBuf buf, @Nullable T value, @Nonnull T nullValue) {
         if (value == null) {
             buf.writeInt(nullValue.ordinal());
         } else {
@@ -126,18 +130,19 @@ public class NetworkTools {
         }
     }
 
-    public static <T extends Enum<T>> T readEnum(ByteBuf buf, T[] values) {
+    @Nullable
+    public static <T extends Enum<T>> T readEnum(@Nonnull ByteBuf buf, @Nonnull T[] values) {
         return values[buf.readInt()];
     }
 
-    public static <T extends Enum<T>> void writeEnumCollection(ByteBuf buf, Collection<T> collection) {
+    public static <T extends Enum<T>> void writeEnumCollection(@Nonnull ByteBuf buf, @Nonnull Collection<T> collection) {
         buf.writeInt(collection.size());
         for (T type : collection) {
             buf.writeInt(type.ordinal());
         }
     }
 
-    public static <T extends Enum<T>> void readEnumCollection(ByteBuf buf, Collection<T> collection, T[] values) {
+    public static <T extends Enum<T>> void readEnumCollection(@Nonnull ByteBuf buf, @Nonnull Collection<T> collection, @Nonnull T[] values) {
         collection.clear();
         int size = buf.readInt();
         for (int i = 0 ; i < size ; i++) {
@@ -145,7 +150,7 @@ public class NetworkTools {
         }
     }
 
-    public static void writeFloat(ByteBuf buf, Float f) {
+    public static void writeFloat(@Nonnull ByteBuf buf, @Nullable Float f) {
         if (f != null) {
             buf.writeBoolean(true);
             buf.writeFloat(f);
@@ -154,7 +159,8 @@ public class NetworkTools {
         }
     }
 
-    public static Float readFloat(ByteBuf buf) {
+    @Nullable
+    public static Float readFloat(@Nonnull ByteBuf buf) {
         if (buf.readBoolean()) {
             return buf.readFloat();
         } else {

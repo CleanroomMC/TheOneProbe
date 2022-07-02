@@ -24,7 +24,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static mcjty.theoneprobe.api.TextStyleClass.ERROR;
 import static mcjty.theoneprobe.api.TextStyleClass.LABEL;
@@ -40,54 +41,9 @@ public class PacketGetInfo implements IMessage {
     private Vec3d hitVec;
     private ItemStack pickBlock;
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        dim = buf.readInt();
-        pos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
-        mode = ProbeMode.values()[buf.readByte()];
-        byte sideByte = buf.readByte();
-        if (sideByte == 127) {
-            sideHit = null;
-        } else {
-            sideHit = EnumFacing.values()[sideByte];
-        }
-        if (buf.readBoolean()) {
-            hitVec = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
-        }
-        pickBlock = ByteBufUtils.readItemStack(buf);
-    }
+    public PacketGetInfo() {/**/}
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(dim);
-        buf.writeInt(pos.getX());
-        buf.writeInt(pos.getY());
-        buf.writeInt(pos.getZ());
-        buf.writeByte(mode.ordinal());
-        buf.writeByte(sideHit == null ? 127 : sideHit.ordinal());
-        if (hitVec == null) {
-            buf.writeBoolean(false);
-        } else {
-            buf.writeBoolean(true);
-            buf.writeDouble(hitVec.x);
-            buf.writeDouble(hitVec.y);
-            buf.writeDouble(hitVec.z);
-        }
-
-        ByteBuf buffer = Unpooled.buffer();
-        ByteBufUtils.writeItemStack(buffer, pickBlock);
-        if (buffer.writerIndex() <= ConfigSetup.maxPacketToServer) {
-            buf.writeBytes(buffer);
-        } else {
-            ItemStack copy = new ItemStack(pickBlock.getItem(), pickBlock.getCount(), pickBlock.getMetadata());
-            ByteBufUtils.writeItemStack(buf, copy);
-        }
-    }
-
-    public PacketGetInfo() {
-    }
-
-    public PacketGetInfo(int dim, BlockPos pos, ProbeMode mode, RayTraceResult mouseOver, ItemStack pickBlock) {
+    public PacketGetInfo(int dim, @Nonnull BlockPos pos, @Nonnull ProbeMode mode, @Nonnull RayTraceResult mouseOver, @Nonnull ItemStack pickBlock) {
         this.dim = dim;
         this.pos = pos;
         this.mode = mode;
@@ -97,13 +53,15 @@ public class PacketGetInfo implements IMessage {
     }
 
     public static class Handler implements IMessageHandler<PacketGetInfo, IMessage> {
+
+        @Nullable
         @Override
-        public IMessage onMessage(PacketGetInfo message, MessageContext ctx) {
+        public IMessage onMessage(@Nonnull PacketGetInfo message, @Nonnull MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
             return null;
         }
 
-        private void handle(PacketGetInfo message, MessageContext ctx) {
+        private void handle(@Nonnull PacketGetInfo message, @Nonnull MessageContext ctx) {
             WorldServer world = DimensionManager.getWorld(message.dim);
             if (world != null) {
                 ProbeInfo probeInfo = getProbeInfo(ctx.getServerHandler().player,
@@ -113,7 +71,8 @@ public class PacketGetInfo implements IMessage {
         }
     }
 
-    private static ProbeInfo getProbeInfo(EntityPlayer player, ProbeMode mode, World world, BlockPos blockPos, EnumFacing sideHit, Vec3d hitVec, ItemStack pickBlock) {
+    @Nullable
+    private static ProbeInfo getProbeInfo(@Nonnull EntityPlayer player, @Nonnull ProbeMode mode, @Nonnull World world, @Nonnull BlockPos blockPos, @Nonnull EnumFacing sideHit, @Nonnull Vec3d hitVec, @Nonnull ItemStack pickBlock) {
         if (ConfigSetup.needsProbe == PROBE_NEEDEDFOREXTENDED) {
             // We need a probe only for extended information
             if (!ModItems.hasAProbeSomewhere(player)) {
@@ -132,22 +91,63 @@ public class PacketGetInfo implements IMessage {
         IProbeHitData data = new ProbeHitData(blockPos, hitVec, sideHit, pickBlock);
 
         IProbeConfig probeConfig = TheOneProbe.theOneProbeImp.createProbeConfig();
-        List<IProbeConfigProvider> configProviders = TheOneProbe.theOneProbeImp.getConfigProviders();
-        for (IProbeConfigProvider configProvider : configProviders) {
+        for (IProbeConfigProvider configProvider : TheOneProbe.theOneProbeImp.getConfigProviders()) {
             configProvider.getProbeConfig(probeConfig, player, world, state, data);
         }
         ConfigSetup.setRealConfig(probeConfig);
 
-        List<IProbeInfoProvider> providers = TheOneProbe.theOneProbeImp.getProviders();
-        for (IProbeInfoProvider provider : providers) {
+        for (IProbeInfoProvider provider : TheOneProbe.theOneProbeImp.getProviders()) {
             try {
                 provider.addProbeInfo(mode, probeInfo, player, world, state, data);
             } catch (Throwable e) {
                 ThrowableIdentity.registerThrowable(e);
-                probeInfo.text(LABEL + "Error: " + ERROR + provider.getID());
+                probeInfo.text(LABEL + "{*theoneprobe.provider.error*} " + ERROR + provider.getID());
             }
         }
         return probeInfo;
     }
 
+    @Override
+    public void fromBytes(@Nonnull ByteBuf buf) {
+        this.dim = buf.readInt();
+        this.pos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
+        this.mode = ProbeMode.values()[buf.readByte()];
+        byte sideByte = buf.readByte();
+        if (sideByte == 127) {
+            this.sideHit = null;
+        } else {
+            this.sideHit = EnumFacing.values()[sideByte];
+        }
+        if (buf.readBoolean()) {
+            this.hitVec = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+        }
+        this.pickBlock = ByteBufUtils.readItemStack(buf);
+    }
+
+    @Override
+    public void toBytes(@Nonnull ByteBuf buf) {
+        buf.writeInt(this.dim);
+        buf.writeInt(this.pos.getX());
+        buf.writeInt(this.pos.getY());
+        buf.writeInt(this.pos.getZ());
+        buf.writeByte(this.mode.ordinal());
+        buf.writeByte(this.sideHit == null ? 127 : this.sideHit.ordinal());
+        if (this.hitVec == null) {
+            buf.writeBoolean(false);
+        } else {
+            buf.writeBoolean(true);
+            buf.writeDouble(this.hitVec.x);
+            buf.writeDouble(this.hitVec.y);
+            buf.writeDouble(this.hitVec.z);
+        }
+
+        ByteBuf buffer = Unpooled.buffer();
+        ByteBufUtils.writeItemStack(buffer, this.pickBlock);
+        if (buffer.writerIndex() <= ConfigSetup.maxPacketToServer) {
+            buf.writeBytes(buffer);
+        } else {
+            ItemStack copy = new ItemStack(this.pickBlock.getItem(), this.pickBlock.getCount(), this.pickBlock.getMetadata());
+            ByteBufUtils.writeItemStack(buf, copy);
+        }
+    }
 }

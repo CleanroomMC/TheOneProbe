@@ -19,6 +19,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,36 +36,9 @@ public class PacketGetEntityInfo implements IMessage {
     private ProbeMode mode;
     private Vec3d hitVec;
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        dim = buf.readInt();
-        uuid = new UUID(buf.readLong(), buf.readLong());
-        mode = ProbeMode.values()[buf.readByte()];
-        if (buf.readBoolean()) {
-            hitVec = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
-        }
-    }
+    public PacketGetEntityInfo() {/**/}
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(dim);
-        buf.writeLong(uuid.getMostSignificantBits());
-        buf.writeLong(uuid.getLeastSignificantBits());
-        buf.writeByte(mode.ordinal());
-        if (hitVec == null) {
-            buf.writeBoolean(false);
-        } else {
-            buf.writeBoolean(true);
-            buf.writeDouble(hitVec.x);
-            buf.writeDouble(hitVec.y);
-            buf.writeDouble(hitVec.z);
-        }
-    }
-
-    public PacketGetEntityInfo() {
-    }
-
-    public PacketGetEntityInfo(int dim, ProbeMode mode, RayTraceResult mouseOver, Entity entity) {
+    public PacketGetEntityInfo(int dim, @Nonnull ProbeMode mode, @Nonnull RayTraceResult mouseOver, @Nonnull Entity entity) {
         this.dim = dim;
         this.uuid = entity.getPersistentID();
         this.mode = mode;
@@ -71,13 +46,15 @@ public class PacketGetEntityInfo implements IMessage {
     }
 
     public static class Handler implements IMessageHandler<PacketGetEntityInfo, IMessage> {
+
+        @Nullable
         @Override
-        public IMessage onMessage(PacketGetEntityInfo message, MessageContext ctx) {
+        public IMessage onMessage(PacketGetEntityInfo message, @Nonnull MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
             return null;
         }
 
-        private void handle(PacketGetEntityInfo message, MessageContext ctx) {
+        private void handle(@Nonnull PacketGetEntityInfo message, @Nonnull MessageContext ctx) {
             WorldServer world = DimensionManager.getWorld(message.dim);
             if (world != null) {
                 Entity entity = world.getEntityFromUuid(message.uuid);
@@ -89,7 +66,8 @@ public class PacketGetEntityInfo implements IMessage {
         }
     }
 
-    private static ProbeInfo getProbeInfo(EntityPlayer player, ProbeMode mode, World world, Entity entity, Vec3d hitVec) {
+    @Nullable
+    private static ProbeInfo getProbeInfo(@Nonnull EntityPlayer player, @Nonnull ProbeMode mode, @Nonnull World world, @Nonnull Entity entity, @Nonnull Vec3d hitVec) {
         if (ConfigSetup.needsProbe == PROBE_NEEDEDFOREXTENDED) {
             // We need a probe only for extended information
             if (!ModItems.hasAProbeSomewhere(player)) {
@@ -103,12 +81,11 @@ public class PacketGetEntityInfo implements IMessage {
             return null;
         }
 
-        ProbeInfo probeInfo = TheOneProbe.theOneProbeImp.create();
-        IProbeHitEntityData data = new ProbeHitEntityData(hitVec);
+        final ProbeInfo probeInfo = TheOneProbe.theOneProbeImp.create();
+        final IProbeHitEntityData data = new ProbeHitEntityData(hitVec);
 
         IProbeConfig probeConfig = TheOneProbe.theOneProbeImp.createProbeConfig();
-        List<IProbeConfigProvider> configProviders = TheOneProbe.theOneProbeImp.getConfigProviders();
-        for (IProbeConfigProvider configProvider : configProviders) {
+        for (IProbeConfigProvider configProvider : TheOneProbe.theOneProbeImp.getConfigProviders()) {
             configProvider.getProbeConfig(probeConfig, player, world, entity, data);
         }
         ConfigSetup.setRealConfig(probeConfig);
@@ -119,10 +96,35 @@ public class PacketGetEntityInfo implements IMessage {
                 provider.addProbeEntityInfo(mode, probeInfo, player, world, entity, data);
             } catch (Throwable e) {
                 ThrowableIdentity.registerThrowable(e);
-                probeInfo.text(LABEL + "Error: " + ERROR + provider.getID());
+                probeInfo.text(LABEL + "{*theoneprobe.provider.error*} " + ERROR + provider.getID());
             }
         }
         return probeInfo;
     }
 
+    @Override
+    public void fromBytes(@Nonnull ByteBuf buf) {
+        this.dim = buf.readInt();
+        this.uuid = new UUID(buf.readLong(), buf.readLong());
+        this.mode = ProbeMode.VALUES[buf.readByte()];
+        if (buf.readBoolean()) {
+            this.hitVec = new Vec3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+        }
+    }
+
+    @Override
+    public void toBytes(@Nonnull ByteBuf buf) {
+        buf.writeInt(this.dim);
+        buf.writeLong(this.uuid.getMostSignificantBits());
+        buf.writeLong(this.uuid.getLeastSignificantBits());
+        buf.writeByte(this.mode.ordinal());
+        if (this.hitVec == null) {
+            buf.writeBoolean(false);
+        } else {
+            buf.writeBoolean(true);
+            buf.writeDouble(this.hitVec.x);
+            buf.writeDouble(this.hitVec.y);
+            buf.writeDouble(this.hitVec.z);
+        }
+    }
 }

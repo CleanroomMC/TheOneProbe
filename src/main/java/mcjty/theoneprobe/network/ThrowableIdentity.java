@@ -1,58 +1,59 @@
 package mcjty.theoneprobe.network;
 
-import mcjty.theoneprobe.config.ConfigSetup;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import mcjty.theoneprobe.TheOneProbe;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Objects;
 
+/**
+ * This class is used by TOP to prevent log spam from erroring providers
+ */
 public class ThrowableIdentity {
+
     private final String identifier;
 
-    private static Map<ThrowableIdentity, Long> catchedThrowables = new HashMap<>();
+    private static final Object2LongOpenHashMap<ThrowableIdentity> caughtThrowables = new Object2LongOpenHashMap<>();
 
-    public static void registerThrowable(Throwable e) {
-        ThrowableIdentity identity = new ThrowableIdentity(e);
-        long curtime = System.currentTimeMillis();
-        if (catchedThrowables.containsKey(identity)) {
-            long lasttime = catchedThrowables.get(identity);
-            if (curtime < lasttime + ConfigSetup.loggingThrowableTimeout) {
-                // If this exception occured less then some time ago we don't report it.
-                return;
-            }
-        }
-        catchedThrowables.put(identity, curtime);
-        TheOneProbe.setup.getLogger().debug("The One Probe catched error: ", e);
-    }
-
-    public ThrowableIdentity(Throwable e) {
-        String message = e.getMessage();
-        StringBuilder builder = new StringBuilder(message == null ? "<null>" : message);
-        StackTraceElement[] st = e.getStackTrace();
+    public ThrowableIdentity(@Nonnull Throwable e) {
+        final String message = e.getMessage();
+        final StringBuilder builder = new StringBuilder(message == null ? "<null>" : message);
+        final StackTraceElement[] st = e.getStackTrace();
         for (int i = 0; i < Math.min(3, st.length); i++) {
-            builder
-                    .append(st[i].getClassName())
+            builder.append(st[i].getClassName())
                     .append(st[i].getFileName())
                     .append(st[i].getMethodName())
                     .append(st[i].getLineNumber());
         }
-        identifier = builder.toString();
+        this.identifier = builder.toString();
+    }
+
+    public static void registerThrowable(@Nonnull Throwable e) {
+        ThrowableIdentity identity = new ThrowableIdentity(e);
+        long curTime = System.currentTimeMillis();
+        if (caughtThrowables.containsKey(identity)) {
+            long lastTime = caughtThrowables.getLong(identity);
+            // only log every 30 seconds
+            if (curTime - lastTime < 30_000) {
+                return;
+            }
+        }
+        caughtThrowables.put(identity, curTime);
+        TheOneProbe.setup.getLogger().debug("The One Probe caught the following error:");
+        e.printStackTrace();
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
 
-        ThrowableIdentity that = (ThrowableIdentity) o;
-
-        if (identifier != null ? !identifier.equals(that.identifier) : that.identifier != null) return false;
-
-        return true;
+        return Objects.equals(identifier, ((ThrowableIdentity) o).identifier);
     }
 
     @Override
     public int hashCode() {
-        return identifier != null ? identifier.hashCode() : 0;
+        return identifier.hashCode();
     }
 }

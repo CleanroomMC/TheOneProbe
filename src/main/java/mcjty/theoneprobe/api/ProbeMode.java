@@ -8,5 +8,7 @@ package mcjty.theoneprobe.api;
 public enum ProbeMode {
     NORMAL,         // Normal display. What a user expects to see
     EXTENDED,       // Extended. This is used when the player is sneaking
-    DEBUG           // Creative only. This is used when the player holds a creative probe
+    DEBUG;          // Creative only. This is used when the player holds a creative probe
+
+    public static final ProbeMode[] VALUES = new ProbeMode[]{NORMAL, EXTENDED, DEBUG};
 }

@@ -9,52 +9,56 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class PacketReturnInfo implements IMessage {
 
     private int dim;
     private BlockPos pos;
     private ProbeInfo probeInfo;
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        dim = buf.readInt();
-        pos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
-        if (buf.readBoolean()) {
-            probeInfo = new ProbeInfo();
-            probeInfo.fromBytes(buf);
-        } else {
-            probeInfo = null;
-        }
-    }
+    public PacketReturnInfo() {/**/}
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(dim);
-        buf.writeInt(pos.getX());
-        buf.writeInt(pos.getY());
-        buf.writeInt(pos.getZ());
-        if (probeInfo != null) {
-            buf.writeBoolean(true);
-            probeInfo.toBytes(buf);
-        } else {
-            buf.writeBoolean(false);
-        }
-    }
-
-    public PacketReturnInfo() {
-    }
-
-    public PacketReturnInfo(int dim, BlockPos pos, ProbeInfo probeInfo) {
+    public PacketReturnInfo(int dim, @Nonnull BlockPos pos, @Nonnull ProbeInfo probeInfo) {
         this.dim = dim;
         this.pos = pos;
         this.probeInfo = probeInfo;
     }
 
     public static class Handler implements IMessageHandler<PacketReturnInfo, IMessage> {
+
+        @Nullable
         @Override
-        public IMessage onMessage(PacketReturnInfo message, MessageContext ctx) {
+        public IMessage onMessage(@Nonnull PacketReturnInfo message, @Nonnull MessageContext ctx) {
             Minecraft.getMinecraft().addScheduledTask(() -> OverlayRenderer.registerProbeInfo(message.dim, message.pos, message.probeInfo));
             return null;
+        }
+    }
+
+    @Override
+    public void fromBytes(@Nonnull ByteBuf buf) {
+        this.dim = buf.readInt();
+        this.pos = new BlockPos(buf.readInt(), buf.readInt(), buf.readInt());
+        if (buf.readBoolean()) {
+            this.probeInfo = new ProbeInfo();
+            this.probeInfo.fromBytes(buf);
+        } else {
+            this.probeInfo = null;
+        }
+    }
+
+    @Override
+    public void toBytes(@Nonnull ByteBuf buf) {
+        buf.writeInt(dim);
+        buf.writeInt(pos.getX());
+        buf.writeInt(pos.getY());
+        buf.writeInt(pos.getZ());
+        if (this.probeInfo != null) {
+            buf.writeBoolean(true);
+            this.probeInfo.toBytes(buf);
+        } else {
+            buf.writeBoolean(false);
         }
     }
 }
