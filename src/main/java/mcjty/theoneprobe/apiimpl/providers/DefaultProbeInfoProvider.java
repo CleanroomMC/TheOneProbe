@@ -16,40 +16,35 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.MobSpawnerBaseLogic;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityBrewingStand;
 import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.energy.CapabilityEnergy;
-import net.minecraftforge.fluids.BlockFluidBase;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidUtil;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.fluids.*;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
 
-import static mcjty.theoneprobe.api.IProbeInfo.ENDLOC;
-import static mcjty.theoneprobe.api.IProbeInfo.STARTLOC;
-import static mcjty.theoneprobe.api.TextStyleClass.*;
-
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
+
+import static mcjty.theoneprobe.api.TextStyleClass.*;
 
 public class DefaultProbeInfoProvider implements IProbeInfoProvider {
 
+    @Nonnull
     @Override
     public String getID() {
-        return TheOneProbe.MODID + ":default";
+        return String.format("%s:default", TheOneProbe.MODID);
     }
 
     @Override
-    public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, EntityPlayer player, World world, IBlockState blockState, IProbeHitData data) {
-        Block block = blockState.getBlock();
-        BlockPos pos = data.getPos();
-
-        IProbeConfig config = ConfigSetup.getRealConfig();
+    public void addProbeInfo(@Nonnull ProbeMode mode, @Nonnull IProbeInfo probeInfo, @Nonnull EntityPlayer player, @Nonnull World world, @Nonnull IBlockState blockState, @Nonnull IProbeHitData data) {
 
         boolean handled = false;
         for (IBlockDisplayOverride override : TheOneProbe.theOneProbeImp.getBlockOverrides()) {
@@ -58,131 +53,110 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
                 break;
             }
         }
+
+        final IProbeConfig config = ConfigSetup.getRealConfig();
+
+        final Block block = blockState.getBlock();
+        final BlockPos pos = data.getPos();
+
         if (!handled) {
             showStandardBlockInfo(config, mode, probeInfo, blockState, block, world, pos, player, data);
         }
 
-        if (Tools.show(mode, config.getShowCropPercentage())) {
-            showGrowthLevel(probeInfo, blockState);
-        }
+        if (Tools.show(mode, config.getShowCropPercentage())) showGrowthLevel(probeInfo, blockState);
 
         boolean showHarvestLevel = Tools.show(mode, config.getShowHarvestLevel());
         boolean showHarvested = Tools.show(mode, config.getShowCanBeHarvested());
-        if (showHarvested && showHarvestLevel) {
+        if (showHarvested && showHarvestLevel)
             HarvestInfoTools.showHarvestInfo(probeInfo, world, pos, block, blockState, player);
-        } else if (showHarvestLevel) {
-            HarvestInfoTools.showHarvestLevel(probeInfo, blockState, block);
-        } else if (showHarvested) {
-            HarvestInfoTools.showCanBeHarvested(probeInfo, world, pos, block, player);
-        }
+        else if (showHarvested) HarvestInfoTools.showCanBeHarvested(probeInfo, world, pos, block, player);
+        else if (showHarvestLevel) HarvestInfoTools.showHarvestLevel(probeInfo, blockState, block);
 
-        if (Tools.show(mode, config.getShowRedstone())) {
+        if (Tools.show(mode, config.getShowRedstone()))
             showRedstonePower(probeInfo, world, blockState, data, block, Tools.show(mode, config.getShowLeverSetting()));
-        }
-        if (Tools.show(mode, config.getShowLeverSetting())) {
-            showLeverSetting(probeInfo, world, blockState, data, block);
-        }
+        if (Tools.show(mode, config.getShowLeverSetting())) showLeverSetting(probeInfo, world, blockState, data, block);
 
         ChestInfoTools.showChestInfo(mode, probeInfo, world, pos, config);
 
-        if (config.getRFMode() > 0) {
-            showRF(probeInfo, world, pos);
-        }
+        if (config.getRFMode() > 0) showRF(probeInfo, world, pos);
         if (Tools.show(mode, config.getShowTankSetting())) {
-            if (config.getTankMode() > 0) {
-                showTankInfo(probeInfo, world, pos);
-            }
+            if (config.getTankMode() > 0) showTankInfo(probeInfo, world, pos);
         }
 
-        if (Tools.show(mode, config.getShowBrewStandSetting())) {
-            showBrewingStandInfo(probeInfo, world, data, block);
-        }
-
-        if (Tools.show(mode, config.getShowMobSpawnerSetting())) {
-            showMobSpawnerInfo(probeInfo, world, data, block);
-        }
+        if (Tools.show(mode, config.getShowBrewStandSetting())) showBrewingStandInfo(probeInfo, world, data, block);
+        if (Tools.show(mode, config.getShowMobSpawnerSetting())) showMobSpawnerInfo(probeInfo, world, data, block);
     }
 
-    private void showBrewingStandInfo(IProbeInfo probeInfo, World world, IProbeHitData data, Block block) {
+    private void showBrewingStandInfo(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull IProbeHitData data, @Nonnull Block block) {
         if (block instanceof BlockBrewingStand) {
-            TileEntity te = world.getTileEntity(data.getPos());
+            final TileEntity te = world.getTileEntity(data.getPos());
             if (te instanceof TileEntityBrewingStand) {
-                int brewtime = ((TileEntityBrewingStand) te).getField(0);
+                int brewTime = ((TileEntityBrewingStand) te).getField(0);
                 int fuel = ((TileEntityBrewingStand) te).getField(1);
                 probeInfo.horizontal(probeInfo.defaultLayoutStyle().alignment(ElementAlignment.ALIGN_CENTER))
                         .item(new ItemStack(Items.BLAZE_POWDER), probeInfo.defaultItemStyle().width(16).height(16))
-                        .text(LABEL + "Fuel: " + INFO + fuel);
-                if (brewtime > 0) {
-                    probeInfo.text(LABEL + "Time: " + INFO + brewtime + " ticks");
+                        .text(LABEL + "{*theoneprobe.provider.block.fuel*} " + INFO + fuel);
+                if (brewTime > 0) {
+                    probeInfo.text(LABEL + "{*theoneprobe.provider.block.time*} " + INFO + StringUtils.ticksToElapsedTime(brewTime));
                 }
-
             }
         }
     }
 
-    private void showMobSpawnerInfo(IProbeInfo probeInfo, World world, IProbeHitData data, Block block) {
+    private void showMobSpawnerInfo(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull IProbeHitData data, @Nonnull Block block) {
         if (block instanceof BlockMobSpawner) {
             TileEntity te = world.getTileEntity(data.getPos());
             if (te instanceof TileEntityMobSpawner) {
-                MobSpawnerBaseLogic logic = ((TileEntityMobSpawner) te).getSpawnerBaseLogic();
-                String mobName = logic.getCachedEntity().getName();
                 probeInfo.horizontal(probeInfo.defaultLayoutStyle()
-                    .alignment(ElementAlignment.ALIGN_CENTER))
-                    .text(LABEL + "Mob: " + INFO + mobName);
+                        .alignment(ElementAlignment.ALIGN_CENTER))
+                        .text(LABEL + "{*theoneprobe.provider.block.mob*} " +
+                                INFO + ((TileEntityMobSpawner) te).getSpawnerBaseLogic().getCachedEntity().getName());
             }
         }
     }
 
-    private void showRedstonePower(IProbeInfo probeInfo, World world, IBlockState blockState, IProbeHitData data, Block block,
-                                   boolean showLever) {
-        if (showLever && block instanceof BlockLever) {
-            // We are showing the lever setting so we don't show redstone in that case
-            return;
-        }
+    private void showRedstonePower(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull IBlockState blockState, @Nonnull IProbeHitData data, @Nonnull Block block, boolean showLever) {
+        // We are showing the lever setting so we don't show redstone in that case
+        if (showLever && block instanceof BlockLever) return;
+
         int redstonePower;
-        if (block instanceof BlockRedstoneWire) {
-            redstonePower = blockState.getValue(BlockRedstoneWire.POWER);
-        } else {
-            redstonePower = world.getRedstonePower(data.getPos(), data.getSideHit().getOpposite());
-        }
+        if (block instanceof BlockRedstoneWire) redstonePower = blockState.getValue(BlockRedstoneWire.POWER);
+        else redstonePower = world.getRedstonePower(data.getPos(), data.getSideHit().getOpposite());
+
         if (redstonePower > 0) {
             probeInfo.horizontal()
                     .item(new ItemStack(Items.REDSTONE), probeInfo.defaultItemStyle().width(14).height(14))
-                    .text(LABEL + "Power: " + INFO + redstonePower);
+                    .text(LABEL + "{*theoneprobe.provider.block.power*} " + INFO + redstonePower);
         }
     }
 
-    private void showLeverSetting(IProbeInfo probeInfo, World world, IBlockState blockState, IProbeHitData data, Block block) {
+    private void showLeverSetting(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull IBlockState blockState, @Nonnull IProbeHitData data, @Nonnull Block block) {
         if (block instanceof BlockLever) {
-            Boolean powered = blockState.getValue(BlockLever.POWERED);
+            boolean powered = blockState.getValue(BlockLever.POWERED);
             probeInfo.horizontal().item(new ItemStack(Items.REDSTONE), probeInfo.defaultItemStyle().width(14).height(14))
-                    .text(LABEL + "State: " + INFO + (powered ? "On" : "Off"));
+                    .text(LABEL + "{*theoneprobe.provider.block.state*} " + INFO + (powered ? "{*theoneprobe.provider.block.on*}" : "{*theoneprobe.provider.block.off*}"));
         } else if (block instanceof BlockRedstoneComparator) {
             BlockRedstoneComparator.Mode mode = blockState.getValue(BlockRedstoneComparator.MODE);
-            probeInfo.text(LABEL + "Mode: " + INFO + mode.getName());
+            probeInfo.text(LABEL + "{*theoneprobe.provider.block.mode*} " + INFO + mode.getName());
         } else if (block instanceof BlockRedstoneRepeater) {
-            Boolean locked = blockState.getValue(BlockRedstoneRepeater.LOCKED);
-            Integer delay = blockState.getValue(BlockRedstoneRepeater.DELAY);
-            probeInfo.text(LABEL + "Delay: " + INFO + delay + " ticks");
-            if (locked) {
-                probeInfo.text(INFO + "Locked");
-            }
+            boolean locked = blockState.getValue(BlockRedstoneRepeater.LOCKED);
+            int delay = blockState.getValue(BlockRedstoneRepeater.DELAY);
+            probeInfo.text(LABEL + "{*theoneprobe.provider.block.delay*} " + INFO + delay + " {*theoneprobe.provider.ticks*}");
+            if (locked) probeInfo.text(INFO + "{*theoneprobe.provider.block.locked*}");
         }
     }
 
-    private void showTankInfo(IProbeInfo probeInfo, World world, BlockPos pos) {
-        ProbeConfig config = ConfigSetup.getDefaultConfig();
-        TileEntity te = world.getTileEntity(pos);
+    private void showTankInfo(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull BlockPos pos) {
+        final TileEntity te = world.getTileEntity(pos);
         if (te != null && te.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null)) {
-            net.minecraftforge.fluids.capability.IFluidHandler handler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
+            IFluidHandler handler = te.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, null);
             if (handler != null) {
                 IFluidTankProperties[] properties = handler.getTankProperties();
                 if (properties != null) {
                     for (IFluidTankProperties property : properties) {
                         if (property != null) {
                             FluidStack fluidStack = property.getContents();
-                            int maxContents = property.getCapacity();
-                            addFluidInfo(probeInfo, config, fluidStack, maxContents);
+                            addFluidInfo(probeInfo, ConfigSetup.getDefaultConfig(), fluidStack, property.getCapacity());
                         }
                     }
                 }
@@ -190,11 +164,11 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
         }
     }
 
-    private void addFluidInfo(IProbeInfo probeInfo, ProbeConfig config, FluidStack fluidStack, int maxContents) {
+    private void addFluidInfo(@Nonnull IProbeInfo probeInfo, @Nonnull ProbeConfig config, @Nullable FluidStack fluidStack, int maxContents) {
+        if (fluidStack != null)
+            probeInfo.text(NAME + "{*theoneprobe.provider.block.fluid*} " + fluidStack.getLocalizedName());
         int contents = fluidStack == null ? 0 : fluidStack.amount;
-        if (fluidStack != null) {
-            probeInfo.text(NAME + "Liquid: " + fluidStack.getLocalizedName());
-        }
+
         if (config.getTankMode() == 1) {
             probeInfo.progress(contents, maxContents,
                     probeInfo.defaultProgressStyle()
@@ -205,13 +179,13 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
                             .borderColorBottom(ConfigSetup.tankbarBorderColorBottom)
                             .numberFormat(ConfigSetup.tankFormat));
         } else {
-            probeInfo.text(PROGRESS + ElementProgress.format(contents, ConfigSetup.tankFormat, "mB"));
+            probeInfo.text(PROGRESS + ElementProgress.format(contents, ConfigSetup.tankFormat, "{*theoneprobe.provider.mb*}"));
         }
     }
 
-    private void showRF(IProbeInfo probeInfo, World world, BlockPos pos) {
+    private void showRF(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull BlockPos pos) {
         ProbeConfig config = ConfigSetup.getDefaultConfig();
-        TileEntity te = world.getTileEntity(pos);
+        final TileEntity te = world.getTileEntity(pos);
         if (ModSetup.tesla && TeslaTools.isEnergyHandler(te)) {
             long energy = TeslaTools.getEnergy(te);
             long maxEnergy = TeslaTools.getMaxEnergy(te);
@@ -225,14 +199,12 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
             int maxEnergy = RedstoneFluxTools.getMaxEnergy(te);
             addRFInfo(probeInfo, config, energy, maxEnergy);
         } else if (te != null && te.hasCapability(CapabilityEnergy.ENERGY, null)) {
-            net.minecraftforge.energy.IEnergyStorage handler = te.getCapability(CapabilityEnergy.ENERGY, null);
-            if (handler != null) {
-                addRFInfo(probeInfo, config, handler.getEnergyStored(), handler.getMaxEnergyStored());
-            }
+            IEnergyStorage handler = te.getCapability(CapabilityEnergy.ENERGY, null);
+            if (handler != null) addRFInfo(probeInfo, config, handler.getEnergyStored(), handler.getMaxEnergyStored());
         }
     }
 
-    private void addRFInfo(IProbeInfo probeInfo, ProbeConfig config, long energy, long maxEnergy) {
+    private void addRFInfo(@Nonnull IProbeInfo probeInfo, @Nonnull ProbeConfig config, long energy, long maxEnergy) {
         if (config.getRFMode() == 1) {
             probeInfo.progress(energy, maxEnergy,
                     probeInfo.defaultProgressStyle()
@@ -243,42 +215,41 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
                             .borderColorBottom(ConfigSetup.rfbarBorderColorBottom)
                             .numberFormat(ConfigSetup.rfFormat));
         } else {
-            probeInfo.text(PROGRESS + "RF: " + ElementProgress.format(energy, ConfigSetup.rfFormat, "RF"));
+            probeInfo.text(PROGRESS + "{*theoneprobe.provider.block.fe*} " + ElementProgress.format(energy, ConfigSetup.rfFormat, "{*theoneprobe.provider.fe*}"));
         }
     }
 
-    private void showGrowthLevel(IProbeInfo probeInfo, IBlockState blockState) {
+    private void showGrowthLevel(@Nonnull IProbeInfo probeInfo, @Nonnull IBlockState blockState) {
         for (IProperty<?> property : blockState.getProperties().keySet()) {
-            if(!"age".equals(property.getName())) continue;
-            if(property.getValueClass() == Integer.class) {
-                IProperty<Integer> integerProperty = (IProperty<Integer>)property;
+            if (!"age".equals(property.getName())) continue;
+            if (property.getValueClass() == Integer.class) {
+                IProperty<Integer> integerProperty = (IProperty<Integer>) property;
                 int age = blockState.getValue(integerProperty);
                 int maxAge = Collections.max(integerProperty.getAllowedValues());
                 if (age == maxAge) {
-                    probeInfo.text(OK + "Fully grown");
+                    probeInfo.text(OK + "{*theoneprobe.provider.block.mature*}");
                 } else {
-                    probeInfo.text(LABEL + "Growth: " + WARNING + (age * 100) / maxAge + "%");
+                    probeInfo.text(LABEL + "{*theoneprobe.provider.block.growth*} " + WARNING + (age * 100) / maxAge + "%");
                 }
             }
             return;
         }
     }
 
-    public static void showStandardBlockInfo(IProbeConfig config, ProbeMode mode, IProbeInfo probeInfo, IBlockState blockState, Block block, World world,
-                                             BlockPos pos, EntityPlayer player, IProbeHitData data) {
-        String modid = Tools.getModName(block);
-
+    public static void showStandardBlockInfo(@Nonnull IProbeConfig config, @Nonnull ProbeMode mode, @Nonnull IProbeInfo probeInfo, @Nonnull IBlockState blockState, @Nonnull Block block, @Nonnull World world,
+                                             @Nonnull BlockPos pos, @Nonnull EntityPlayer player, @Nonnull IProbeHitData data) {
         ItemStack pickBlock = data.getPickBlock();
 
-        if (block instanceof BlockSilverfish && mode != ProbeMode.DEBUG && !Tools.show(mode,config.getShowSilverfish())) {
+        if (block instanceof BlockSilverfish && mode != ProbeMode.DEBUG && !Tools.show(mode, config.getShowSilverfish())) {
             BlockSilverfish.EnumType type = blockState.getValue(BlockSilverfish.VARIANT);
             blockState = type.getModelBlock();
             block = blockState.getBlock();
             pickBlock = new ItemStack(block, 1, block.getMetaFromState(blockState));
         }
 
+        final String modid = Tools.getModName(block);
         if (block instanceof BlockFluidBase || block instanceof BlockLiquid) {
-            Fluid fluid = FluidRegistry.lookupFluidForBlock(block);
+            final Fluid fluid = FluidRegistry.lookupFluidForBlock(block);
             if (fluid != null) {
                 FluidStack fluidStack = new FluidStack(fluid, Fluid.BUCKET_VOLUME);
                 ItemStack bucketStack = FluidUtil.getFilledBucket(fluidStack);
@@ -290,9 +261,7 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
                     horizontal.icon(fluid.getStill(), -1, -1, 16, 16, probeInfo.defaultIconStyle().width(20));
                 }
 
-                horizontal.vertical()
-                        .text(NAME + fluidStack.getLocalizedName())
-                        .text(MODNAME + modid);
+                horizontal.vertical().text(NAME + fluidStack.getLocalizedName()).text(MODNAME + modid);
                 return;
             }
         }
@@ -321,7 +290,8 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
         }
     }
 
-    private static String getBlockUnlocalizedName(Block block) {
-        return STARTLOC + block.getTranslationKey() + ".name" + ENDLOC;
+    @Nonnull
+    private static String getBlockUnlocalizedName(@Nonnull Block block) {
+        return String.format("{*%s.name*}", block.getTranslationKey());
     }
 }

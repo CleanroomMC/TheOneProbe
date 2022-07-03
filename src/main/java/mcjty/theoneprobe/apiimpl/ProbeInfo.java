@@ -1,42 +1,43 @@
 package mcjty.theoneprobe.apiimpl;
 
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import mcjty.theoneprobe.TheOneProbe;
 import mcjty.theoneprobe.api.ElementAlignment;
 import mcjty.theoneprobe.api.IElement;
 import mcjty.theoneprobe.api.IElementFactory;
 import mcjty.theoneprobe.apiimpl.elements.ElementVertical;
 
-import java.util.ArrayList;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 public class ProbeInfo extends ElementVertical {
 
+    @Nonnull
     public List<IElement> getElements() {
-        return children;
+        return this.children;
     }
 
-    public void fromBytes(ByteBuf buf) {
-        children = createElements(buf);
+    public void fromBytes(@Nonnull ByteBuf buf) {
+        this.children = createElements(buf);
     }
 
     public ProbeInfo() {
-        super((Integer) null, 2, ElementAlignment.ALIGN_TOPLEFT);
+        super(null, 2, ElementAlignment.ALIGN_TOPLEFT);
     }
 
-    public static List<IElement> createElements(ByteBuf buf) {
+    @Nonnull
+    public static List<IElement> createElements(@Nonnull ByteBuf buf) {
         int size = buf.readShort();
-        List<IElement> elements = new ArrayList<>(size);
-        for (int i = 0 ; i < size ; i++) {
-            int id = buf.readInt();
-            IElementFactory factory = TheOneProbe.theOneProbeImp.getElementFactory(id);
-            IElement element = factory.createElement(buf);
-            elements.add(element);
+        List<IElement> elements = new ObjectArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            IElementFactory factory = TheOneProbe.theOneProbeImp.getElementFactory(buf.readInt());
+            if (factory != null) elements.add(factory.createElement(buf));
         }
         return elements;
     }
 
-    public static void writeElements(List<IElement> elements, ByteBuf buf) {
+    public static void writeElements(@Nonnull List<IElement> elements, @Nonnull ByteBuf buf) {
         buf.writeShort(elements.size());
         for (IElement element : elements) {
             buf.writeInt(element.getID());
@@ -44,7 +45,7 @@ public class ProbeInfo extends ElementVertical {
         }
     }
 
-    public void removeElement(IElement element) {
+    public void removeElement(@Nonnull IElement element) {
         this.getElements().remove(element);
     }
 }

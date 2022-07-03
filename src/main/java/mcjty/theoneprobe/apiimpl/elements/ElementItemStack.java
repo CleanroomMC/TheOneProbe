@@ -9,52 +9,49 @@ import mcjty.theoneprobe.apiimpl.styles.ItemStyle;
 import mcjty.theoneprobe.network.NetworkTools;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nonnull;
+
 public class ElementItemStack implements IElement {
 
     private final ItemStack itemStack;
     private final IItemStyle style;
 
-    public ElementItemStack(ItemStack itemStack, IItemStyle style) {
+    public ElementItemStack(@Nonnull ItemStack itemStack, @Nonnull IItemStyle style) {
         this.itemStack = itemStack;
         this.style = style;
     }
 
-    public ElementItemStack(ByteBuf buf) {
-        if (buf.readBoolean()) {
-            itemStack = NetworkTools.readItemStack(buf);
-        } else {
-            itemStack = ItemStack.EMPTY;
-        }
-        style = new ItemStyle()
+    public ElementItemStack(@Nonnull ByteBuf buf) {
+        if (buf.readBoolean()) this.itemStack = NetworkTools.readItemStack(buf);
+        else this.itemStack = ItemStack.EMPTY;
+        this.style = new ItemStyle()
                 .width(buf.readInt())
                 .height(buf.readInt());
     }
 
     @Override
     public void render(int x, int y) {
-        ElementItemStackRender.render(itemStack, style, x, y);
+        ElementItemStackRender.render(this.itemStack, this.style, x, y);
     }
 
     @Override
     public int getWidth() {
-        return style.getWidth();
+        return this.style.getWidth();
     }
 
     @Override
     public int getHeight() {
-        return style.getHeight();
+        return this.style.getHeight();
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        if (!itemStack.isEmpty()) {
+    public void toBytes(@Nonnull ByteBuf buf) {
+        if (!this.itemStack.isEmpty()) {
             buf.writeBoolean(true);
-            NetworkTools.writeItemStack(buf, itemStack);
-        } else {
-            buf.writeBoolean(false);
-        }
-        buf.writeInt(style.getWidth());
-        buf.writeInt(style.getHeight());
+            NetworkTools.writeItemStack(buf, this.itemStack);
+        } else buf.writeBoolean(false);
+        buf.writeInt(this.style.getWidth());
+        buf.writeInt(this.style.getHeight());
     }
 
     @Override

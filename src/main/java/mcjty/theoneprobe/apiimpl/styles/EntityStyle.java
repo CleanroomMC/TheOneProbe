@@ -3,6 +3,7 @@ package mcjty.theoneprobe.apiimpl.styles;
 import mcjty.theoneprobe.api.IEntityStyle;
 
 public class EntityStyle implements IEntityStyle {
+
     private int width = 25;
     private int height = 25;
     private float scale = 1.0f;
@@ -27,16 +28,16 @@ public class EntityStyle implements IEntityStyle {
 
     @Override
     public int getWidth() {
-        return width;
+        return this.width;
     }
 
     @Override
     public int getHeight() {
-        return height;
+        return this.height;
     }
 
     @Override
     public float getScale() {
-        return scale;
+        return this.scale;
     }
 }

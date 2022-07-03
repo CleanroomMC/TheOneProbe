@@ -2,9 +2,9 @@ package mcjty.theoneprobe.apiimpl;
 
 import mcjty.theoneprobe.api.IProbeConfig;
 
-import static mcjty.theoneprobe.api.IProbeConfig.ConfigMode.EXTENDED;
-import static mcjty.theoneprobe.api.IProbeConfig.ConfigMode.NORMAL;
-import static mcjty.theoneprobe.api.IProbeConfig.ConfigMode.NOT;
+import javax.annotation.Nonnull;
+
+import static mcjty.theoneprobe.api.IProbeConfig.ConfigMode.*;
 
 public class ProbeConfig implements IProbeConfig {
 
@@ -29,7 +29,9 @@ public class ProbeConfig implements IProbeConfig {
     private IProbeConfig.ConfigMode showHorseStats = EXTENDED;
     private IProbeConfig.ConfigMode showSilverfish = NOT;
 
-    /// Make a lazy copy of this probe config.
+    /**
+     * Make a lazy copy of this probe config.
+     */
     public IProbeConfig lazyCopy() {
         return new LazyProbeConfig(this);
     }
@@ -57,187 +59,204 @@ public class ProbeConfig implements IProbeConfig {
     }
 
     @Override
-    public IProbeConfig showHorseStatSetting(ConfigMode mode) {
+    public IProbeConfig showHorseStatSetting(@Nonnull ConfigMode mode) {
         showHorseStats = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getHorseStatSetting() {
         return showHorseStats;
     }
 
     @Override
-    public IProbeConfig showAnimalOwnerSetting(ConfigMode mode) {
+    public IProbeConfig showAnimalOwnerSetting(@Nonnull ConfigMode mode) {
         showMobOwner = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getAnimalOwnerSetting() {
         return showMobOwner;
     }
 
     @Override
-    public IProbeConfig showBrewStandSetting(ConfigMode mode) {
+    public IProbeConfig showBrewStandSetting(@Nonnull ConfigMode mode) {
         showBrewStand = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowBrewStandSetting() {
         return showBrewStand;
     }
 
     @Override
-    public IProbeConfig showMobSpawnerSetting(ConfigMode mode) {
+    public IProbeConfig showMobSpawnerSetting(@Nonnull ConfigMode mode) {
         showMobSpawner = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobSpawnerSetting() {
         return showMobSpawner;
     }
 
     @Override
-    public IProbeConfig showModName(ConfigMode mode) {
+    public IProbeConfig showModName(@Nonnull ConfigMode mode) {
         showModName = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowModName() {
         return showModName;
     }
 
     @Override
-    public IProbeConfig showHarvestLevel(ConfigMode mode) {
+    public IProbeConfig showHarvestLevel(@Nonnull ConfigMode mode) {
         showHarvestLevel = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowHarvestLevel() {
         return showHarvestLevel;
     }
 
     @Override
-    public IProbeConfig showCanBeHarvested(ConfigMode mode) {
+    public IProbeConfig showCanBeHarvested(@Nonnull ConfigMode mode) {
         showCanBeHarvested = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowCanBeHarvested() {
         return showCanBeHarvested;
     }
 
     @Override
-    public IProbeConfig showCropPercentage(ConfigMode mode) {
+    public IProbeConfig showCropPercentage(@Nonnull ConfigMode mode) {
         showCropPercentage = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowCropPercentage() {
         return showCropPercentage;
     }
 
     @Override
-    public IProbeConfig showChestContents(ConfigMode mode) {
+    public IProbeConfig showChestContents(@Nonnull ConfigMode mode) {
         showChestContents = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowChestContents() {
         return showChestContents;
     }
 
     @Override
-    public IProbeConfig showChestContentsDetailed(ConfigMode mode) {
+    public IProbeConfig showChestContentsDetailed(@Nonnull ConfigMode mode) {
         showChestContentsDetailed = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowChestContentsDetailed() {
         return showChestContentsDetailed;
     }
 
     @Override
-    public IProbeConfig showRedstone(ConfigMode mode) {
+    public IProbeConfig showRedstone(@Nonnull ConfigMode mode) {
         showRedstone = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowRedstone() {
         return showRedstone;
     }
 
     @Override
-    public IProbeConfig showMobHealth(ConfigMode mode) {
+    public IProbeConfig showMobHealth(@Nonnull ConfigMode mode) {
         showMobHealth = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobHealth() {
         return showMobHealth;
     }
 
     @Override
-    public IProbeConfig showMobGrowth(ConfigMode mode) {
+    public IProbeConfig showMobGrowth(@Nonnull ConfigMode mode) {
         showMobGrowth = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobGrowth() {
         return showMobGrowth;
     }
 
     @Override
-    public IProbeConfig showMobPotionEffects(ConfigMode mode) {
+    public IProbeConfig showMobPotionEffects(@Nonnull ConfigMode mode) {
         showMobPotionEffects = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobPotionEffects() {
         return showMobPotionEffects;
     }
 
     @Override
-    public IProbeConfig showLeverSetting(ConfigMode mode) {
+    public IProbeConfig showLeverSetting(@Nonnull ConfigMode mode) {
         showLeverSetting = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowLeverSetting() {
         return showLeverSetting;
     }
 
     @Override
-    public IProbeConfig showTankSetting(ConfigMode mode) {
+    public IProbeConfig showTankSetting(@Nonnull ConfigMode mode) {
         showTankSetting = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowTankSetting() {
         return showTankSetting;
     }
 
     @Override
-    public IProbeConfig showSilverfish(ConfigMode mode) {
+    public IProbeConfig showSilverfish(@Nonnull ConfigMode mode) {
         showSilverfish = mode;
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowSilverfish() {
         return showSilverfish;

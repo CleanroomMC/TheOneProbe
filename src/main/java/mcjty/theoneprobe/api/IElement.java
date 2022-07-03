@@ -2,6 +2,8 @@ package mcjty.theoneprobe.api;
 
 import io.netty.buffer.ByteBuf;
 
+import javax.annotation.Nonnull;
+
 /**
  * An element in the probe gui.
  */
@@ -26,7 +28,7 @@ public interface IElement {
      * Persist this element to the given network buffer. This should be symmetrical to
      * what IElementFactory.createElement() expects.
      */
-    void toBytes(ByteBuf buf);
+    void toBytes(@Nonnull ByteBuf buf);
 
     /**
      * Get the identifier for this element (as returned by ITheOneProbe.registerElementFactory()

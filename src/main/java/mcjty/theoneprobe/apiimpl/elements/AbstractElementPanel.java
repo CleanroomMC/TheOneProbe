@@ -1,21 +1,22 @@
 package mcjty.theoneprobe.apiimpl.elements;
 
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import mcjty.theoneprobe.api.*;
 import mcjty.theoneprobe.apiimpl.ProbeInfo;
 import mcjty.theoneprobe.apiimpl.styles.*;
 import mcjty.theoneprobe.rendering.RenderHelper;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.ArrayList;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 public abstract class AbstractElementPanel implements IElement, IProbeInfo {
 
-    protected List<IElement> children = new ArrayList<>();
+    protected List<IElement> children = new ObjectArrayList<>();
     protected Integer borderColor;
     protected int spacing;
     protected ElementAlignment alignment;
@@ -23,121 +24,116 @@ public abstract class AbstractElementPanel implements IElement, IProbeInfo {
 
     @Override
     public void render(int x, int y) {
-        if (borderColor != null) {
-            int w = getWidth();
-            int h = getHeight();
-
-            RenderHelper.drawThickBeveledBoxGradient(x, y, x + w -2, y + h -2, 1, RenderHelper.renderColorToHSB(borderColor, 0.8f, 1.0f), borderColor, 0x00ffffff);
-
-
+        if (this.borderColor != null) {
+            RenderHelper.drawThickBeveledBoxGradient(x, y, x + getWidth() -2, y + getHeight() -2, 1, RenderHelper.renderColorToHSB(borderColor, 0.8f, 1.0f), borderColor, 0x00ffffff);
         }
     }
 
-    public AbstractElementPanel(Integer borderColor, int spacing, ElementAlignment alignment) {
+    public AbstractElementPanel(@Nullable Integer borderColor, int spacing, @Nonnull ElementAlignment alignment) {
         this.borderColor = borderColor;
         this.spacing = spacing;
         this.alignment = alignment;
     }
 
-    public AbstractElementPanel(ByteBuf buf) {
-        children = ProbeInfo.createElements(buf);
+    public AbstractElementPanel(@Nonnull ByteBuf buf) {
+        this.children = ProbeInfo.createElements(buf);
         if (buf.readBoolean()) {
             borderColor = buf.readInt();
         }
-        spacing = buf.readShort();
-        alignment = ElementAlignment.values()[buf.readShort()];
+        this.spacing = buf.readShort();
+        this.alignment = ElementAlignment.values()[buf.readShort()];
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(@Nonnull ByteBuf buf) {
         ProbeInfo.writeElements(children, buf);
-        if (borderColor != null) {
+        if (this.borderColor != null) {
             buf.writeBoolean(true);
-            buf.writeInt(borderColor);
+            buf.writeInt(this.borderColor);
         } else {
             buf.writeBoolean(false);
         }
-        buf.writeShort(spacing);
-        buf.writeShort(alignment.ordinal());
+        buf.writeShort(this.spacing);
+        buf.writeShort(this.alignment.ordinal());
     }
 
     @Override
-    public IProbeInfo icon(ResourceLocation icon, int u, int v, int w, int h) {
+    public IProbeInfo icon(@Nonnull ResourceLocation icon, int u, int v, int w, int h) {
         return icon(icon, u, v, w, h, new IconStyle());
     }
 
     @Override
-    public IProbeInfo icon(ResourceLocation icon, int u, int v, int w, int h, IIconStyle style) {
+    public IProbeInfo icon(@Nonnull ResourceLocation icon, int u, int v, int w, int h, @Nonnull IIconStyle style) {
         children.add(new ElementIcon(icon, u, v, w, h, style));
         return this;
     }
 
     @Override
-    public IProbeInfo text(String text) {
+    public IProbeInfo text(@Nonnull String text) {
         children.add(new ElementText(text));
         return this;
     }
 
     @Override
-    public IProbeInfo text(String text, ITextStyle style) {
+    public IProbeInfo text(@Nonnull String text, @Nonnull ITextStyle style) {
         children.add(new ElementText(text));
         return this;
     }
 
     @Override
-    public IProbeInfo textSmall(String text) {
+    public IProbeInfo textSmall(@Nonnull String text) {
         children.add(new ElementTextSmall(text));
         return this;
     }
 
     @Override
-    public IProbeInfo textSmall(String text, ITextStyle style) {
+    public IProbeInfo textSmall(@Nonnull String text, @Nonnull ITextStyle style) {
         children.add(new ElementTextSmall(text));
         return this;
     }
 
     @Override
-    public IProbeInfo itemLabel(ItemStack stack, ITextStyle style) {
+    public IProbeInfo itemLabel(@Nonnull ItemStack stack, @Nonnull ITextStyle style) {
         children.add(new ElementItemLabel(stack));
         return this;
     }
 
     @Override
-    public IProbeInfo itemLabel(ItemStack stack) {
+    public IProbeInfo itemLabel(@Nonnull ItemStack stack) {
         children.add(new ElementItemLabel(stack));
         return this;
     }
 
     @Override
-    public IProbeInfo entity(String entityName, IEntityStyle style) {
+    public IProbeInfo entity(@Nonnull String entityName, @Nonnull IEntityStyle style) {
         children.add(new ElementEntity(entityName, style));
         return this;
     }
 
     @Override
-    public IProbeInfo entity(String entityName) {
+    public IProbeInfo entity(@Nonnull String entityName) {
         return entity(entityName, new EntityStyle());
     }
 
     @Override
-    public IProbeInfo entity(Entity entity, IEntityStyle style) {
+    public IProbeInfo entity(@Nonnull Entity entity, @Nonnull IEntityStyle style) {
         children.add(new ElementEntity(entity, style));
         return this;
     }
 
     @Override
-    public IProbeInfo entity(Entity entity) {
+    public IProbeInfo entity(@Nonnull Entity entity) {
         return entity(entity, new EntityStyle());
     }
 
     @Override
-    public IProbeInfo item(ItemStack stack, IItemStyle style) {
+    public IProbeInfo item(@Nonnull ItemStack stack, @Nonnull IItemStyle style) {
         children.add(new ElementItemStack(stack, style));
         return this;
     }
 
     @Override
-    public IProbeInfo item(ItemStack stack) {
+    public IProbeInfo item(@Nonnull ItemStack stack) {
         return item(stack, new ItemStyle());
     }
 
@@ -147,7 +143,7 @@ public abstract class AbstractElementPanel implements IElement, IProbeInfo {
     }
 
     @Override
-    public IProbeInfo progress(int current, int max, IProgressStyle style) {
+    public IProbeInfo progress(int current, int max, @Nonnull IProgressStyle style) {
         children.add(new ElementProgress(current, max, style));
         return this;
     }
@@ -158,13 +154,13 @@ public abstract class AbstractElementPanel implements IElement, IProbeInfo {
     }
 
     @Override
-    public IProbeInfo progress(long current, long max, IProgressStyle style) {
+    public IProbeInfo progress(long current, long max, @Nonnull IProgressStyle style) {
         children.add(new ElementProgress(current, max, style));
         return this;
     }
 
     @Override
-    public IProbeInfo horizontal(ILayoutStyle style) {
+    public IProbeInfo horizontal(@Nonnull ILayoutStyle style) {
         ElementHorizontal e = new ElementHorizontal(style.getBorderColor(), style.getSpacing(), style.getAlignment());
         children.add(e);
         return e;
@@ -178,7 +174,7 @@ public abstract class AbstractElementPanel implements IElement, IProbeInfo {
     }
 
     @Override
-    public IProbeInfo vertical(ILayoutStyle style) {
+    public IProbeInfo vertical(@Nonnull ILayoutStyle style) {
         ElementVertical e = new ElementVertical(style.getBorderColor(), style.getSpacing(), style.getAlignment());
         children.add(e);
         return e;
@@ -192,7 +188,7 @@ public abstract class AbstractElementPanel implements IElement, IProbeInfo {
     }
 
     @Override
-    public IProbeInfo element(IElement element) {
+    public IProbeInfo element(@Nonnull IElement element) {
         children.add(element);
         return this;
     }

@@ -8,6 +8,8 @@ import mcjty.theoneprobe.apiimpl.styles.DefaultOverlayStyle;
 import mcjty.theoneprobe.config.ConfigSetup;
 import mcjty.theoneprobe.rendering.OverlayRenderer;
 
+import javax.annotation.Nonnull;
+
 public class DefaultOverlayRenderer implements IOverlayRenderer {
 
     @Override
@@ -21,7 +23,7 @@ public class DefaultOverlayRenderer implements IOverlayRenderer {
     }
 
     @Override
-    public void render(IOverlayStyle style, IProbeInfo probeInfo) {
+    public void render(@Nonnull IOverlayStyle style, @Nonnull IProbeInfo probeInfo) {
         OverlayRenderer.renderOverlay(style, probeInfo);
     }
 }

@@ -1,35 +1,34 @@
 package mcjty.theoneprobe.apiimpl.client;
 
 import mcjty.theoneprobe.api.IItemStyle;
-import mcjty.theoneprobe.network.ThrowableIdentity;
 import mcjty.theoneprobe.rendering.RenderHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 
+import javax.annotation.Nonnull;
+
 public class ElementItemStackRender {
 
-    public static void render(ItemStack itemStack, IItemStyle style, int x, int y) {
-        RenderItem itemRender = Minecraft.getMinecraft().getRenderItem();
+    public static void render(@Nonnull ItemStack itemStack, @Nonnull IItemStyle style, int x, int y) {
         if (!itemStack.isEmpty()) {
-            int size = itemStack.getCount();
+            final int size = itemStack.getCount();
             String amount;
             if (size <= 1) {
                 amount = "";
             } else if (size < 100000) {
                 amount = String.valueOf(size);
             } else if (size < 1000000) {
-                amount = String.valueOf(size / 1000) + "k";
+                amount = size / 1000 + "k";
             } else if (size < 1000000000) {
-                amount = String.valueOf(size / 1000000) + "m";
+                amount = size / 1000000 + "m";
             } else {
-                amount = String.valueOf(size / 1000000000) + "g";
+                amount = size / 1000000000 + "g";
             }
 
-            if (!RenderHelper.renderItemStack(Minecraft.getMinecraft(), itemRender, itemStack, x + (style.getWidth() - 18) / 2, y + (style.getHeight() - 18) / 2, amount)) {
+            if (!RenderHelper.renderItemStack(Minecraft.getMinecraft(), Minecraft.getMinecraft().getRenderItem(), itemStack, x + (style.getWidth() - 18) / 2, y + (style.getHeight() - 18) / 2, amount)) {
                 // There was a crash rendering this item
-                RenderHelper.renderText(Minecraft.getMinecraft(), x, y, TextFormatting.RED + "ERROR: " + itemStack.getDisplayName());
+                RenderHelper.renderText(Minecraft.getMinecraft(), x, y, TextFormatting.RED + "{*theoneprobe.provider.error*} " + itemStack.getDisplayName());
             }
         }
     }

@@ -1,11 +1,11 @@
 package mcjty.theoneprobe.api;
 
 /**
- * This inerface represents the default config for The One Probe.
+ * This interface represents the default config for The One Probe.
  */
 public interface IProbeConfig {
 
-    public static enum ConfigMode {
+    enum ConfigMode {
         NOT,            // Don't show
         NORMAL,         // Show
         EXTENDED        // Show only when sneaking
@@ -62,7 +62,7 @@ public interface IProbeConfig {
     IProbeConfig showChestContents(ConfigMode mode);
     ConfigMode getShowChestContents();
 
-    // This controls when detailed chest info is shown in case the amount of items is below showItemDetailThresshold
+    // This controls when detailed chest info is shown in case the amount of items is below showItemDetailThreshold
     IProbeConfig showChestContentsDetailed(ConfigMode mode);
     ConfigMode getShowChestContentsDetailed();
 

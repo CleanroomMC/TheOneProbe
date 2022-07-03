@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -16,19 +17,20 @@ import static mcjty.theoneprobe.api.IProbeInfo.STARTLOC;
 public class ElementTextRender {
 
     public static void render(String text, int x, int y) {
-        RenderHelper.renderText(Minecraft.getMinecraft(), x, y, stylifyString(text));
+        RenderHelper.renderText(Minecraft.getMinecraft(), x, y, stylizeString(text));
     }
 
-    private static String stylifyString(String text) {
+    @Nonnull
+    private static String stylizeString(@Nonnull String text) {
         while (text.contains(STARTLOC) && text.contains(ENDLOC)) {
             int start = text.indexOf(STARTLOC);
             int end = text.indexOf(ENDLOC);
             if (start < end) {
                 // Translation is needed
-                String left = text.substring(0, start);
+                final String left = text.substring(0, start);
                 String middle = text.substring(start + 2, end);
                 middle = I18n.format(middle).trim();
-                String right = text.substring(end+2);
+                final String right = text.substring(end+2);
                 text = left + middle + right;
             } else {
                 break;
@@ -39,7 +41,7 @@ public class ElementTextRender {
             TextStyleClass context = null;
             for (TextStyleClass styleClass : ConfigSetup.textStyleClasses.keySet()) {
                 if (text.contains(styleClass.toString())) {
-                    String replacement = ConfigSetup.getTextStyle(styleClass);
+                    final String replacement = ConfigSetup.getTextStyle(styleClass);
                     if ("context".equals(replacement)) {
                         stylesNeedingContext.add(styleClass);
                     } else if (context == null) {
@@ -52,7 +54,7 @@ public class ElementTextRender {
             }
             if (context != null) {
                 for (TextStyleClass styleClass : stylesNeedingContext) {
-                    String replacement = ConfigSetup.getTextStyle(context);
+                    final String replacement = ConfigSetup.getTextStyle(context);
                     text = StringUtils.replace(text, styleClass.toString(), replacement);
                 }
             }
@@ -60,7 +62,7 @@ public class ElementTextRender {
         return text;
     }
 
-    public static int getWidth(String text) {
-        return Minecraft.getMinecraft().fontRenderer.getStringWidth(stylifyString(text));
+    public static int getWidth(@Nonnull String text) {
+        return Minecraft.getMinecraft().fontRenderer.getStringWidth(stylizeString(text));
     }
 }

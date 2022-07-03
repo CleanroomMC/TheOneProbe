@@ -4,4 +4,39 @@ key.categories.theoneprobe=The One Probe
 
 theoneprobe.message.configure_top=§6Configure TOP style with /topcfg
 
+
+
 theoneprobe.provider.error=Error:
+theoneprobe.provider.ticks=ticks
+theoneprobe.provider.mb=mB
+theoneprobe.provider.fe=FE
+
+theoneprobe.provider.entity.health=Health:
+theoneprobe.provider.entity.growing_time=Growing time:
+theoneprobe.provider.entity.rotation=Rotation:
+theoneprobe.provider.entity.empty=Empty
+theoneprobe.provider.entity.unknown_owner=Unknown owner
+theoneprobe.provider.entity.owner=Owned by:
+theoneprobe.provider.entity.tamable=Tamable
+theoneprobe.provider.entity.jump_height=Jump Height:
+theoneprobe.provider.entity.speed=Speed:
+theoneprobe.provider.entity.collar=Collar:
+theoneprobe.provider.block.fuel=Fuel:
+theoneprobe.provider.block.time=Time:
+theoneprobe.provider.block.mob=Mob:
+theoneprobe.provider.block.power=Power:
+theoneprobe.provider.block.state=State:
+theoneprobe.provider.block.on=On
+theoneprobe.provider.block.off=Off
+theoneprobe.provider.block.mode=Mode:
+theoneprobe.provider.block.delay=Delay:
+theoneprobe.provider.block.locked=Locked
+theoneprobe.provider.block.fluid=Fluid:
+theoneprobe.provider.block.fe=FE:
+theoneprobe.provider.block.mature=Mature
+theoneprobe.provider.block.growth=Growth:
+theoneprobe.provider.harvest.tool=Tool:
+theoneprobe.provider.harvest.harvestable=Harvestable
+theoneprobe.provider.harvest.not_harvestable=Not harvestable
+theoneprobe.provider.harvest.no_tool=No tool
+theoneprobe.provider.harvest.level=level

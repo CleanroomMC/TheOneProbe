@@ -4,6 +4,8 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
+
 /**
  * Implement this interface if you want a custom display for your own blocks instead of the standard
  * display. This can be useful if you (for example) have a multiblock and want to show a picture of the
@@ -15,6 +17,6 @@ public interface IBlockDisplayOverride {
      * This function returns true if you handled the probe info yourselves and TOP doesn't have to add its
      * own info.
      */
-    boolean overrideStandardInfo(ProbeMode mode, IProbeInfo probeInfo, EntityPlayer player, World world, IBlockState blockState, IProbeHitData data);
+    boolean overrideStandardInfo(@Nonnull ProbeMode mode, @Nonnull IProbeInfo probeInfo, @Nonnull EntityPlayer player, @Nonnull World world, @Nonnull IBlockState blockState, @Nonnull IProbeHitData data);
 
 }

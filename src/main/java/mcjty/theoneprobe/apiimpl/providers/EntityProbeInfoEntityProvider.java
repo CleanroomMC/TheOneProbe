@@ -6,18 +6,20 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
+import javax.annotation.Nonnull;
+
 public class EntityProbeInfoEntityProvider implements IProbeInfoEntityProvider {
 
+    @Nonnull
     @Override
     public String getID() {
-        return TheOneProbe.MODID + ":entity.entity";
+        return String.format("%s:entity.entity", TheOneProbe.MODID);
     }
 
     @Override
-    public void addProbeEntityInfo(ProbeMode mode, IProbeInfo probeInfo, EntityPlayer player, World world, Entity entity, IProbeHitEntityData data) {
+    public void addProbeEntityInfo(@Nonnull ProbeMode mode, @Nonnull IProbeInfo probeInfo, @Nonnull EntityPlayer player, @Nonnull World world, @Nonnull Entity entity, @Nonnull IProbeHitEntityData data) {
         if (entity instanceof IProbeInfoEntityAccessor) {
-            IProbeInfoEntityAccessor accessor = (IProbeInfoEntityAccessor) entity;
-            accessor.addProbeInfo(mode, probeInfo, player, world, entity, data);
+            ((IProbeInfoEntityAccessor) entity).addProbeInfo(mode, probeInfo, player, world, entity, data);
         }
     }
 }

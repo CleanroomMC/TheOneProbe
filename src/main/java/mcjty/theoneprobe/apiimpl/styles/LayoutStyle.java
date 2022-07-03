@@ -3,30 +3,36 @@ package mcjty.theoneprobe.apiimpl.styles;
 import mcjty.theoneprobe.api.ElementAlignment;
 import mcjty.theoneprobe.api.ILayoutStyle;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
- * Style for a horizonatl or vertical layout.
+ * Style for a horizontal or vertical layout.
  */
 public class LayoutStyle implements ILayoutStyle {
+
     private Integer borderColor = null;
-    private Integer borderColor2 = null;
     private ElementAlignment alignment = ElementAlignment.ALIGN_TOPLEFT;
     private int spacing = -1;
 
     @Override
-    public ILayoutStyle alignment(ElementAlignment alignment) {
+    public ILayoutStyle alignment(@Nonnull ElementAlignment alignment) {
         this.alignment = alignment;
         return this;
     }
 
+    @Nonnull
     @Override
     public ElementAlignment getAlignment() {
-        return alignment;
+        return this.alignment;
     }
 
-    /// The color that is used for the border of the progress bar
+    /**
+     * The color that is used for the border of the progress bar
+     */
     @Override
-    public LayoutStyle borderColor(Integer c) {
-        borderColor = c;
+    public LayoutStyle borderColor(@Nullable Integer c) {
+        this.borderColor = c;
         return this;
     }
 
@@ -36,17 +42,18 @@ public class LayoutStyle implements ILayoutStyle {
      */
     @Override
     public LayoutStyle spacing(int f) {
-        spacing = f;
+        this.spacing = f;
         return this;
     }
 
+    @Nullable
     @Override
     public Integer getBorderColor() {
-        return borderColor;
+        return this.borderColor;
     }
 
     @Override
     public int getSpacing() {
-        return spacing;
+        return this.spacing;
     }
 }

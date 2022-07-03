@@ -2,19 +2,21 @@ package mcjty.theoneprobe.apiimpl;
 
 import mcjty.theoneprobe.api.IProbeConfig;
 
+import javax.annotation.Nonnull;
+
 public class LazyProbeConfig implements IProbeConfig {
 
     private IProbeConfig original;
     private boolean dirty = false;
 
-    public LazyProbeConfig(IProbeConfig original) {
+    public LazyProbeConfig(@Nonnull IProbeConfig original) {
         this.original = original;
     }
 
     private IProbeConfig realCopy() {
-        if (!dirty) {
-            dirty = true;
-            original = new ProbeConfig()
+        if (!this.dirty) {
+            this.dirty = true;
+            this.original = new ProbeConfig()
                     .setRFMode(original.getRFMode())
                     .setTankMode(original.getTankMode())
                     .showModName(original.getShowModName())
@@ -33,9 +35,9 @@ public class LazyProbeConfig implements IProbeConfig {
                     .showMobSpawnerSetting(original.getShowMobSpawnerSetting())
                     .showAnimalOwnerSetting(original.getAnimalOwnerSetting())
                     .showHorseStatSetting(original.getHorseStatSetting())
-					.showSilverfish(original.getShowSilverfish());
+                    .showSilverfish(original.getShowSilverfish());
         }
-        return original;
+        return this.original;
     }
 
     @Override
@@ -50,55 +52,60 @@ public class LazyProbeConfig implements IProbeConfig {
     }
 
     @Override
-    public IProbeConfig showHorseStatSetting(ConfigMode mode) {
+    public IProbeConfig showHorseStatSetting(@Nonnull ConfigMode mode) {
         realCopy().showHorseStatSetting(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getHorseStatSetting() {
         return original.getHorseStatSetting();
     }
 
     @Override
-    public IProbeConfig showAnimalOwnerSetting(ConfigMode mode) {
+    public IProbeConfig showAnimalOwnerSetting(@Nonnull ConfigMode mode) {
         realCopy().showAnimalOwnerSetting(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getAnimalOwnerSetting() {
         return original.getAnimalOwnerSetting();
     }
 
     @Override
-    public IProbeConfig showMobSpawnerSetting(ConfigMode mode) {
+    public IProbeConfig showMobSpawnerSetting(@Nonnull ConfigMode mode) {
         realCopy().showMobSpawnerSetting(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobSpawnerSetting() {
         return original.getShowMobSpawnerSetting();
     }
 
     @Override
-    public IProbeConfig showBrewStandSetting(ConfigMode mode) {
+    public IProbeConfig showBrewStandSetting(@Nonnull ConfigMode mode) {
         realCopy().showBrewStandSetting(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowBrewStandSetting() {
         return original.getShowBrewStandSetting();
     }
 
     @Override
-    public IProbeConfig showTankSetting(ConfigMode mode) {
+    public IProbeConfig showTankSetting(@Nonnull ConfigMode mode) {
         realCopy().showTankSetting(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowTankSetting() {
         return original.getShowTankSetting();
@@ -116,134 +123,146 @@ public class LazyProbeConfig implements IProbeConfig {
     }
 
     @Override
-    public IProbeConfig showModName(ConfigMode mode) {
+    public IProbeConfig showModName(@Nonnull ConfigMode mode) {
         realCopy().showModName(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowModName() {
         return original.getShowModName();
     }
 
     @Override
-    public IProbeConfig showHarvestLevel(ConfigMode mode) {
+    public IProbeConfig showHarvestLevel(@Nonnull ConfigMode mode) {
         realCopy().showHarvestLevel(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowHarvestLevel() {
         return original.getShowHarvestLevel();
     }
 
     @Override
-    public IProbeConfig showCanBeHarvested(ConfigMode mode) {
+    public IProbeConfig showCanBeHarvested(@Nonnull ConfigMode mode) {
         realCopy().showCanBeHarvested(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowCanBeHarvested() {
         return original.getShowCanBeHarvested();
     }
 
     @Override
-    public IProbeConfig showCropPercentage(ConfigMode mode) {
+    public IProbeConfig showCropPercentage(@Nonnull ConfigMode mode) {
         realCopy().showCropPercentage(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowCropPercentage() {
         return original.getShowCropPercentage();
     }
 
     @Override
-    public IProbeConfig showChestContents(ConfigMode mode) {
+    public IProbeConfig showChestContents(@Nonnull ConfigMode mode) {
         realCopy().showChestContents(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowChestContents() {
         return original.getShowChestContents();
     }
 
     @Override
-    public IProbeConfig showChestContentsDetailed(ConfigMode mode) {
+    public IProbeConfig showChestContentsDetailed(@Nonnull ConfigMode mode) {
         realCopy().showChestContentsDetailed(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowChestContentsDetailed() {
         return original.getShowChestContentsDetailed();
     }
 
     @Override
-    public IProbeConfig showRedstone(ConfigMode mode) {
+    public IProbeConfig showRedstone(@Nonnull ConfigMode mode) {
         realCopy().showRedstone(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowRedstone() {
         return original.getShowRedstone();
     }
 
     @Override
-    public IProbeConfig showMobHealth(ConfigMode mode) {
+    public IProbeConfig showMobHealth(@Nonnull ConfigMode mode) {
         realCopy().showMobHealth(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobHealth() {
         return original.getShowMobHealth();
     }
 
     @Override
-    public IProbeConfig showMobGrowth(ConfigMode mode) {
+    public IProbeConfig showMobGrowth(@Nonnull ConfigMode mode) {
         realCopy().showMobGrowth(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobGrowth() {
         return original.getShowMobGrowth();
     }
 
     @Override
-    public IProbeConfig showMobPotionEffects(ConfigMode mode) {
+    public IProbeConfig showMobPotionEffects(@Nonnull ConfigMode mode) {
         realCopy().showMobPotionEffects(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowMobPotionEffects() {
         return original.getShowMobPotionEffects();
     }
 
     @Override
-    public IProbeConfig showLeverSetting(ConfigMode mode) {
+    public IProbeConfig showLeverSetting(@Nonnull ConfigMode mode) {
         realCopy().showLeverSetting(mode);
         return this;
     }
 
+    @Nonnull
     @Override
     public ConfigMode getShowLeverSetting() {
         return original.getShowLeverSetting();
     }
-	
-	@Override
-	public ConfigMode getShowSilverfish() {
-		return original.getShowSilverfish();
-	}
-	
-	@Override
-	public IProbeConfig showSilverfish(ConfigMode mode){
-		realCopy().showSilverfish(mode);
-		return this;
-	}
+
+    @Nonnull
+    @Override
+    public ConfigMode getShowSilverfish() {
+        return original.getShowSilverfish();
+    }
+
+    @Override
+    public IProbeConfig showSilverfish(@Nonnull ConfigMode mode) {
+        realCopy().showSilverfish(mode);
+        return this;
+    }
 }

@@ -1,6 +1,7 @@
 package mcjty.theoneprobe.apiimpl.providers;
 
-import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import mcjty.theoneprobe.Tools;
 import mcjty.theoneprobe.api.ElementAlignment;
 import mcjty.theoneprobe.api.IProbeConfig;
@@ -15,15 +16,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -31,14 +29,13 @@ import static mcjty.theoneprobe.api.TextStyleClass.INFO;
 
 public class ChestInfoTools {
 
-    static void showChestInfo(ProbeMode mode, IProbeInfo probeInfo, World world, BlockPos pos, IProbeConfig config) {
-        List<ItemStack> stacks = null;
+    public static void showChestInfo(@Nonnull ProbeMode mode, @Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull IProbeConfig config) {
+        List<ItemStack> stacks = new ObjectArrayList<>();
         IProbeConfig.ConfigMode chestMode = config.getShowChestContents();
         if (chestMode == IProbeConfig.ConfigMode.EXTENDED && (ConfigSetup.showSmallChestContentsWithoutSneaking > 0 || !ConfigSetup.getInventoriesToShow().isEmpty())) {
             if (ConfigSetup.getInventoriesToShow().contains(world.getBlockState(pos).getBlock().getRegistryName())) {
                 chestMode = IProbeConfig.ConfigMode.NORMAL;
             } else if (ConfigSetup.showSmallChestContentsWithoutSneaking > 0) {
-                stacks = new ArrayList<>();
                 int slots = getChestContents(world, pos, stacks);
                 if (slots <= ConfigSetup.showSmallChestContentsWithoutSneaking) {
                     chestMode = IProbeConfig.ConfigMode.NORMAL;
@@ -49,35 +46,25 @@ public class ChestInfoTools {
                 chestMode = IProbeConfig.ConfigMode.EXTENDED;
             }
         }
-        TileEntity tile = world.getTileEntity(pos);
 
         if (Tools.show(mode, chestMode)) {
-            if (stacks == null) {
-                stacks = new ArrayList<>();
-                getChestContents(world, pos, stacks);
-            }
+            if (stacks.isEmpty()) getChestContents(world, pos, stacks);
 
-            if (tile instanceof TileEntityFurnace) {
-                return;
-            }
+            if (world.getTileEntity(pos) instanceof TileEntityFurnace) return;
 
             if (!stacks.isEmpty()) {
                 boolean showDetailed = Tools.show(mode, config.getShowChestContentsDetailed()) && stacks.size() <= ConfigSetup.showItemDetailThresshold;
                 if (mode == ProbeMode.NORMAL) {
-                    if (stacks.size() >= 5) {
-                        stacks = stacks.subList(0, 5);
-                    }
+                    if (stacks.size() >= 5) stacks = stacks.subList(0, 5);
                 }
                 showChestContents(probeInfo, world, pos, stacks, mode != ProbeMode.NORMAL && showDetailed);
             }
         }
     }
 
-    private static void addItemStack(List<ItemStack> stacks, Set<Item> foundItems, @Nonnull ItemStack stack) {
-        if (stack.isEmpty()) {
-            return;
-        }
-        if (foundItems != null && foundItems.contains(stack.getItem())) {
+    private static void addItemStack(@Nonnull List<ItemStack> stacks, @Nonnull Set<Item> foundItems, @Nonnull ItemStack stack) {
+        if (stack.isEmpty()) return;
+        if (foundItems.contains(stack.getItem())) {
             for (ItemStack s : stacks) {
                 if (ItemHandlerHelper.canItemStacksStack(s, stack)) {
                     s.grow(stack.getCount());
@@ -87,62 +74,56 @@ public class ChestInfoTools {
         }
         // If we come here we need to append a new stack
         stacks.add(stack.copy());
-        if (foundItems != null) {
-            foundItems.add(stack.getItem());
-        }
+        foundItems.add(stack.getItem());
     }
 
-    private static void showChestContents(IProbeInfo probeInfo, World world, BlockPos pos, List<ItemStack> stacks, boolean detailed) {
-        IProbeInfo vertical = null;
+    private static void showChestContents(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull List<ItemStack> stacks, boolean detailed) {
+        IProbeInfo vertical = probeInfo.vertical(probeInfo.defaultLayoutStyle().borderColor(ConfigSetup.chestContentsBorderColor).spacing(0));;
         IProbeInfo horizontal = null;
 
         int rows = 0;
         int idx = 0;
 
-        vertical = probeInfo.vertical(probeInfo.defaultLayoutStyle().borderColor(ConfigSetup.chestContentsBorderColor).spacing(0));
-
         if (detailed) {
             for (ItemStack stackInSlot : stacks) {
-                horizontal = vertical.horizontal(new LayoutStyle().spacing(5).alignment(ElementAlignment.ALIGN_CENTER));
-                horizontal.item(stackInSlot, new ItemStyle().width(20).height(20))
-                    .text(INFO + stackInSlot.getDisplayName() + " ");
+                vertical.horizontal(new LayoutStyle().spacing(5).alignment(ElementAlignment.ALIGN_CENTER))
+                        .item(stackInSlot, new ItemStyle().width(20).height(20))
+                        .text(INFO + stackInSlot.getDisplayName() + " ");
             }
         } else {
             for (ItemStack stackInSlot : stacks) {
                 if (idx % 9 == 0) {
                     horizontal = vertical.horizontal(new LayoutStyle().spacing(0));
                     rows++;
-                    if (rows > 4) {
-                        break;
-                    }
+                    if (rows > 4) break;
                 }
+                if (horizontal == null) continue;
                 horizontal.item(stackInSlot);
                 idx++;
             }
         }
     }
 
-    private static int getChestContents(World world, BlockPos pos, List<ItemStack> stacks) {
+    private static int getChestContents(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull List<ItemStack> stacks) {
         TileEntity te = world.getTileEntity(pos);
 
-        Set<Item> foundItems = ConfigSetup.compactEqualStacks ? new HashSet<>() : null;
+        Set<Item> foundItems = ConfigSetup.compactEqualStacks ? new ObjectOpenHashSet<>() : null;
         int maxSlots = 0;
-        try {
-            if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
-                IItemHandler capability = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
-                maxSlots = capability.getSlots();
-                for (int i = 0; i < maxSlots; i++) {
+        if (te != null && te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)) {
+            IItemHandler capability = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+            if (capability != null && foundItems != null) {
+                for (int i = 0; i < capability.getSlots(); i++) {
                     addItemStack(stacks, foundItems, capability.getStackInSlot(i));
                 }
-            } else if (te instanceof IInventory) {
-                IInventory inventory = (IInventory) te;
-                maxSlots = inventory.getSizeInventory();
+            }
+        } else if (te instanceof IInventory) {
+            IInventory inventory = (IInventory) te;
+            maxSlots = inventory.getSizeInventory();
+            if (foundItems != null) {
                 for (int i = 0; i < maxSlots; i++) {
                     addItemStack(stacks, foundItems, inventory.getStackInSlot(i));
                 }
             }
-        } catch(RuntimeException e) {
-            throw new RuntimeException("Getting the contents of a " + world.getBlockState(pos).getBlock().getRegistryName() + " (" + te.getClass().getName() + ")", e);
         }
         return maxSlots;
     }

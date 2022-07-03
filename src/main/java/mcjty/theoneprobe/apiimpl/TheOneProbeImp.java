@@ -1,11 +1,18 @@
 package mcjty.theoneprobe.apiimpl;
 
-import mcjty.theoneprobe.config.ConfigSetup;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import mcjty.theoneprobe.TheOneProbe;
 import mcjty.theoneprobe.api.*;
 import mcjty.theoneprobe.apiimpl.elements.*;
+import mcjty.theoneprobe.config.ConfigSetup;
 
-import java.util.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class TheOneProbeImp implements ITheOneProbe {
 
@@ -19,17 +26,16 @@ public class TheOneProbeImp implements ITheOneProbe {
     public static int ELEMENT_ICON;
     public static int ELEMENT_ITEMLABEL;
 
-    private List<IProbeConfigProvider> configProviders = new ArrayList<>();
+    private final List<IProbeConfigProvider> configProviders = new ObjectArrayList<>();
 
-    private List<IProbeInfoProvider> providers = new ArrayList<>();
-    private List<IProbeInfoEntityProvider> entityProviders = new ArrayList<>();
-    private List<IBlockDisplayOverride> blockOverrides = new ArrayList<>();
-    private List<IEntityDisplayOverride> entityOverrides = new ArrayList<>();
-    private Map<Integer,IElementFactory> factories = new HashMap<>();
+    private List<IProbeInfoProvider> providers = new ObjectArrayList<>();
+    private List<IProbeInfoEntityProvider> entityProviders = new ObjectArrayList<>();
+    private final List<IBlockDisplayOverride> blockOverrides = new ObjectArrayList<>();
+    private final List<IEntityDisplayOverride> entityOverrides = new ObjectArrayList<>();
+    private final Map<Integer, IElementFactory> factories = new Int2ObjectOpenHashMap<>();
     private int lastId = 0;
 
-    public TheOneProbeImp() {
-    }
+    public TheOneProbeImp() {/**/}
 
     public static void registerElements() {
         ELEMENT_TEXT = TheOneProbe.theOneProbeImp.registerElementFactory(ElementText::new);
@@ -43,9 +49,9 @@ public class TheOneProbeImp implements ITheOneProbe {
         ELEMENT_ITEMLABEL = TheOneProbe.theOneProbeImp.registerElementFactory(ElementItemLabel::new);
     }
 
-    private int findProvider(String id) {
-        for (int i = 0 ; i < providers.size() ; i++) {
-            if (id.equals(providers.get(i).getID())) {
+    private int findProvider(@Nonnull String id) {
+        for (int i = 0; i < this.providers.size(); i++) {
+            if (id.equals(this.providers.get(i).getID())) {
                 return i;
             }
         }
@@ -53,18 +59,18 @@ public class TheOneProbeImp implements ITheOneProbe {
     }
 
     @Override
-    public void registerProvider(IProbeInfoProvider provider) {
+    public void registerProvider(@Nonnull IProbeInfoProvider provider) {
         int idx = findProvider(provider.getID());
         if (idx != -1) {
-            providers.set(idx, provider);
+            this.providers.set(idx, provider);
         } else {
-            providers.add(provider);
+            this.providers.add(provider);
         }
     }
 
-    private int findEntityProvider(String id) {
-        for (int i = 0 ; i < entityProviders.size() ; i++) {
-            if (id.equals(entityProviders.get(i).getID())) {
+    private int findEntityProvider(@Nonnull String id) {
+        for (int i = 0; i < this.entityProviders.size(); i++) {
+            if (id.equals(this.entityProviders.get(i).getID())) {
                 return i;
             }
         }
@@ -72,18 +78,16 @@ public class TheOneProbeImp implements ITheOneProbe {
     }
 
     @Override
-    public void registerEntityProvider(IProbeInfoEntityProvider provider) {
+    public void registerEntityProvider(@Nonnull IProbeInfoEntityProvider provider) {
         int idx = findEntityProvider(provider.getID());
-        if (idx != -1) {
-            entityProviders.set(idx, provider);
-        } else {
-            entityProviders.add(provider);
-        }
+        if (idx != -1) this.entityProviders.set(idx, provider);
+        else this.entityProviders.add(provider);
     }
 
+    @Nullable
     @Override
     public IElementFactory getElementFactory(int id) {
-        return factories.get(id);
+        return this.factories.get(id);
     }
 
     public ProbeInfo create() {
@@ -91,36 +95,38 @@ public class TheOneProbeImp implements ITheOneProbe {
     }
 
     public List<IProbeInfoProvider> getProviders() {
-        return providers;
+        return this.providers;
     }
 
     public List<IProbeInfoEntityProvider> getEntityProviders() {
-        return entityProviders;
+        return this.entityProviders;
     }
 
-    private IProbeInfoProvider getProviderByID(String id) {
+    @Nullable
+    private IProbeInfoProvider getProviderByID(@Nonnull String id) {
         for (IProbeInfoProvider provider : providers) {
-            if (provider.getID().equals(id)) {
+            if (id.equals(provider.getID())) {
                 return provider;
             }
         }
         return null;
     }
 
-    private IProbeInfoEntityProvider getEntityProviderByID(String id) {
+    @Nullable
+    private IProbeInfoEntityProvider getEntityProviderByID(@Nonnull String id) {
         for (IProbeInfoEntityProvider provider : entityProviders) {
-            if (provider.getID().equals(id)) {
+            if (id.equals(provider.getID())) {
                 return provider;
             }
         }
         return null;
     }
 
-    public void configureProviders(String[] sortedProviders, Set<String> excludedProviders) {
-        List<IProbeInfoProvider> newProviders = new ArrayList<>();
+    public void configureProviders(@Nonnull String[] sortedProviders, @Nonnull Set<String> excludedProviders) {
+        List<IProbeInfoProvider> newProviders = new ObjectArrayList<>();
         for (String id : sortedProviders) {
             if (!excludedProviders.contains(id)) {
-                IProbeInfoProvider provider = getProviderByID(id);
+                final IProbeInfoProvider provider = getProviderByID(id);
                 if (provider != null) {
                     newProviders.add(provider);
                 }
@@ -129,79 +135,81 @@ public class TheOneProbeImp implements ITheOneProbe {
 
         // Add all providers that are not in the list of sortedProviders and are also not
         // excluded.
-        for (IProbeInfoProvider provider : providers) {
+        for (IProbeInfoProvider provider : this.providers) {
             if ((!newProviders.contains(provider)) && !excludedProviders.contains(provider.getID())) {
                 newProviders.add(provider);
             }
         }
 
-        providers = newProviders;
+        this.providers = newProviders;
     }
 
-    public void configureEntityProviders(String[] sortedProviders, Set<String> excludedProviders) {
+    public void configureEntityProviders(@Nonnull String[] sortedProviders, @Nonnull Set<String> excludedProviders) {
         List<IProbeInfoEntityProvider> newProviders = new ArrayList<>();
         for (String id : sortedProviders) {
             if (!excludedProviders.contains(id)) {
                 IProbeInfoEntityProvider provider = getEntityProviderByID(id);
-                if (provider != null) {
-                    newProviders.add(provider);
-                }
+                if (provider != null) newProviders.add(provider);
             }
         }
 
         // Add all providers that are not in the list of sortedProviders and are also not
         // excluded.
-        for (IProbeInfoEntityProvider provider : entityProviders) {
+        for (IProbeInfoEntityProvider provider : this.entityProviders) {
             if ((!newProviders.contains(provider)) && !excludedProviders.contains(provider.getID())) {
                 newProviders.add(provider);
             }
         }
 
-        entityProviders = newProviders;
+        this.entityProviders = newProviders;
     }
 
     @Override
-    public int registerElementFactory(IElementFactory factory) {
-        factories.put(lastId, factory);
-        int id = lastId;
-        lastId++;
+    public int registerElementFactory(@Nonnull IElementFactory factory) {
+        this.factories.put(this.lastId, factory);
+        int id = this.lastId;
+        this.lastId++;
         return id;
     }
 
+    @Nonnull
     @Override
     public IOverlayRenderer getOverlayRenderer() {
         return new DefaultOverlayRenderer();
     }
 
+    @Nonnull
     @Override
     public IProbeConfig createProbeConfig() {
         return ConfigSetup.getDefaultConfig().lazyCopy();
     }
 
     @Override
-    public void registerProbeConfigProvider(IProbeConfigProvider provider) {
-        configProviders.add(provider);
+    public void registerProbeConfigProvider(@Nonnull IProbeConfigProvider provider) {
+        this.configProviders.add(provider);
     }
 
     public List<IProbeConfigProvider> getConfigProviders() {
-        return configProviders;
+        return this.configProviders;
     }
 
     @Override
-    public void registerBlockDisplayOverride(IBlockDisplayOverride override) {
-        blockOverrides.add(override);
+    public void registerBlockDisplayOverride(@Nonnull IBlockDisplayOverride override) {
+        this.blockOverrides.add(override);
     }
 
+    @Nonnull
     public List<IBlockDisplayOverride> getBlockOverrides() {
-        return blockOverrides;
+        return this.blockOverrides;
     }
 
     @Override
-    public void registerEntityDisplayOverride(IEntityDisplayOverride override) {
-        entityOverrides.add(override);
+    public void registerEntityDisplayOverride(@Nonnull IEntityDisplayOverride override) {
+        this.entityOverrides.add(override);
     }
 
+    @Nonnull
     public List<IEntityDisplayOverride> getEntityOverrides() {
-        return entityOverrides;
+        return this.entityOverrides;
     }
 }

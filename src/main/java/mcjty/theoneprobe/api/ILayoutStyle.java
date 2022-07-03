@@ -1,10 +1,15 @@
 package mcjty.theoneprobe.api;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
- * Style for a horizonatl or vertical layout.
+ * Style for a horizontal or vertical layout.
  */
 public interface ILayoutStyle {
-    /// The color that is used for the border of the progress bar
+    /**
+     * The color that is used for the border of the progress bar
+     */
     ILayoutStyle borderColor(Integer c);
 
     /**
@@ -14,13 +19,15 @@ public interface ILayoutStyle {
     ILayoutStyle spacing(int f);
 
     /**
-     * Set the alignment of the elements inside this element. Default is ALIGN_TOPLEFT
+     * Set the alignment of the elements inside this element. Default is {@link ElementAlignment#ALIGN_TOPLEFT}
      */
     ILayoutStyle alignment(ElementAlignment alignment);
 
+    @Nullable
     Integer getBorderColor();
 
     int getSpacing();
 
+    @Nonnull
     ElementAlignment getAlignment();
 }

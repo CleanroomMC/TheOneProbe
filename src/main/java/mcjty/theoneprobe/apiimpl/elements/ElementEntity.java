@@ -12,6 +12,8 @@ import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
+import javax.annotation.Nonnull;
+
 public class ElementEntity implements IElement {
 
     private final String entityName;
@@ -19,41 +21,41 @@ public class ElementEntity implements IElement {
     private final NBTTagCompound entityNBT;
     private final IEntityStyle style;
 
-    public ElementEntity(String entityName, IEntityStyle style) {
+    public ElementEntity(@Nonnull String entityName, @Nonnull IEntityStyle style) {
         this.entityName = entityName;
         this.entityNBT = null;
         this.style = style;
         this.playerID = null;
     }
 
-    public ElementEntity(Entity entity, IEntityStyle style) {
+    public ElementEntity(@Nonnull Entity entity, @Nonnull IEntityStyle style) {
         if (entity instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) entity;
-            entityNBT = null;
-            playerID = player.getEntityId();
+            this.entityNBT = null;
+            this.playerID = player.getEntityId();
         } else {
-            entityNBT = entity.serializeNBT();
-            playerID = null;
+            this.entityNBT = entity.serializeNBT();
+            this.playerID = null;
         }
         this.entityName = EntityList.getEntityString(entity);
         this.style = style;
     }
 
-    public ElementEntity(ByteBuf buf) {
-        entityName = NetworkTools.readString(buf);
-        style = new EntityStyle()
+    public ElementEntity(@Nonnull ByteBuf buf) {
+        this.entityName = NetworkTools.readString(buf);
+        this.style = new EntityStyle()
                 .width(buf.readInt())
                 .height(buf.readInt())
                 .scale(buf.readFloat());
         if (buf.readBoolean()) {
-            entityNBT = NetworkTools.readNBT(buf);
+            this.entityNBT = NetworkTools.readNBT(buf);
         } else {
-            entityNBT = null;
+            this.entityNBT = null;
         }
         if (buf.readBoolean()) {
-            playerID = buf.readInt();
+            this.playerID = buf.readInt();
         } else {
-            playerID = null;
+            this.playerID = null;
         }
     }
 
@@ -77,20 +79,20 @@ public class ElementEntity implements IElement {
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
+    public void toBytes(@Nonnull ByteBuf buf) {
         NetworkTools.writeString(buf, entityName);
-        buf.writeInt(style.getWidth());
-        buf.writeInt(style.getHeight());
-        buf.writeFloat(style.getScale());
-        if (entityNBT != null) {
+        buf.writeInt(this.style.getWidth());
+        buf.writeInt(this.style.getHeight());
+        buf.writeFloat(this.style.getScale());
+        if (this.entityNBT != null) {
             buf.writeBoolean(true);
             NetworkTools.writeNBT(buf, entityNBT);
         } else {
             buf.writeBoolean(false);
         }
-        if (playerID != null) {
+        if (this.playerID != null) {
             buf.writeBoolean(true);
-            buf.writeInt(playerID);
+            buf.writeInt(this.playerID);
         } else {
             buf.writeBoolean(false);
         }

@@ -6,26 +6,28 @@ import mcjty.theoneprobe.apiimpl.TheOneProbeImp;
 import mcjty.theoneprobe.apiimpl.client.ElementTextSmallRender;
 import mcjty.theoneprobe.network.NetworkTools;
 
+import javax.annotation.Nonnull;
+
 public class ElementTextSmall implements IElement {
 
     private final String text;
 
-    public ElementTextSmall(String text) {
+    public ElementTextSmall(@Nonnull String text) {
         this.text = text;
     }
 
-    public ElementTextSmall(ByteBuf buf) {
-        text = NetworkTools.readStringUTF8(buf);
+    public ElementTextSmall(@Nonnull ByteBuf buf) {
+        this.text = NetworkTools.readStringUTF8(buf);
     }
 
     @Override
     public void render(int x, int y) {
-        ElementTextSmallRender.render(text, x, y);
+        ElementTextSmallRender.render(this.text, x, y);
     }
 
     @Override
     public int getWidth() {
-        return ElementTextSmallRender.getWidth(text);
+        return ElementTextSmallRender.getWidth(this.text);
     }
 
     @Override
@@ -34,8 +36,8 @@ public class ElementTextSmall implements IElement {
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        NetworkTools.writeStringUTF8(buf, text);
+    public void toBytes(@Nonnull ByteBuf buf) {
+        NetworkTools.writeStringUTF8(buf, this.text);
     }
 
     @Override

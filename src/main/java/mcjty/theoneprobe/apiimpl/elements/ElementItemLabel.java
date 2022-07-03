@@ -7,35 +7,32 @@ import mcjty.theoneprobe.apiimpl.client.ElementTextRender;
 import mcjty.theoneprobe.network.NetworkTools;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nonnull;
+
 public class ElementItemLabel implements IElement {
 
     private final ItemStack itemStack;
 
-    public ElementItemLabel(ItemStack itemStack) {
+    public ElementItemLabel(@Nonnull ItemStack itemStack) {
         this.itemStack = itemStack;
     }
 
-    public ElementItemLabel(ByteBuf buf) {
-        if (buf.readBoolean()) {
-            itemStack = NetworkTools.readItemStack(buf);
-        } else {
-            itemStack = ItemStack.EMPTY;
-        }
+    public ElementItemLabel(@Nonnull ByteBuf buf) {
+        if (buf.readBoolean()) this.itemStack = NetworkTools.readItemStack(buf);
+        else this.itemStack = ItemStack.EMPTY;
     }
 
     @Override
     public void render(int x, int y) {
-        if (!itemStack.isEmpty()) {
-            String text = itemStack.getDisplayName();
-            ElementTextRender.render(text, x, y);
+        if (!this.itemStack.isEmpty()) {
+            ElementTextRender.render(this.itemStack.getDisplayName(), x, y);
         }
     }
 
     @Override
     public int getWidth() {
-        if (!itemStack.isEmpty()) {
-            String text = itemStack.getDisplayName();
-            return ElementTextRender.getWidth(text);
+        if (!this.itemStack.isEmpty()) {
+            return ElementTextRender.getWidth(this.itemStack.getDisplayName());
         } else {
             return 10;
         }
@@ -47,10 +44,10 @@ public class ElementItemLabel implements IElement {
     }
 
     @Override
-    public void toBytes(ByteBuf buf) {
-        if (!itemStack.isEmpty()) {
+    public void toBytes(@Nonnull ByteBuf buf) {
+        if (!this.itemStack.isEmpty()) {
             buf.writeBoolean(true);
-            NetworkTools.writeItemStack(buf, itemStack);
+            NetworkTools.writeItemStack(buf, this.itemStack);
         } else {
             buf.writeBoolean(false);
         }
