@@ -10,7 +10,11 @@ import javax.annotation.Nonnull;
 
 public class PropertiesDispatcher implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
 
-    private PlayerReceivedMessage playerReceivedMessage = new PlayerReceivedMessage();
+    private final PlayerReceivedMessage playerReceivedMessage;
+
+    public PropertiesDispatcher() {
+        this.playerReceivedMessage = new PlayerReceivedMessage();
+    }
 
     @Override
     public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
