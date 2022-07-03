@@ -166,7 +166,7 @@ public class DefaultProbeInfoProvider implements IProbeInfoProvider {
 
     private void addFluidInfo(@Nonnull IProbeInfo probeInfo, @Nonnull ProbeConfig config, @Nullable FluidStack fluidStack, int maxContents) {
         if (fluidStack != null)
-            probeInfo.text(NAME + "{*theoneprobe.provider.block.fluid*} " + fluidStack.getLocalizedName());
+            probeInfo.text(NAME + "{*theoneprobe.provider.block.fluid*} " + " {*" + fluidStack.getUnlocalizedName() +"*}");
         int contents = fluidStack == null ? 0 : fluidStack.amount;
 
         if (config.getTankMode() == 1) {

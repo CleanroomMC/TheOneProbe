@@ -78,7 +78,7 @@ public class ChestInfoTools {
     }
 
     private static void showChestContents(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull List<ItemStack> stacks, boolean detailed) {
-        IProbeInfo vertical = probeInfo.vertical(probeInfo.defaultLayoutStyle().borderColor(ConfigSetup.chestContentsBorderColor).spacing(0));;
+        IProbeInfo vertical = probeInfo.vertical(probeInfo.defaultLayoutStyle().borderColor(ConfigSetup.chestContentsBorderColor).spacing(0));
         IProbeInfo horizontal = null;
 
         int rows = 0;
@@ -88,7 +88,8 @@ public class ChestInfoTools {
             for (ItemStack stackInSlot : stacks) {
                 vertical.horizontal(new LayoutStyle().spacing(5).alignment(ElementAlignment.ALIGN_CENTER))
                         .item(stackInSlot, new ItemStyle().width(20).height(20))
-                        .text(INFO + stackInSlot.getDisplayName() + " ");
+                        .itemLabel(stackInSlot)
+                        .text(INFO + " ");
             }
         } else {
             for (ItemStack stackInSlot : stacks) {
