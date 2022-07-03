@@ -20,12 +20,25 @@ public interface IOverlayStyle {
     int getBorderThickness();
 
     /**
+     * Use {@link IOverlayStyle#borderColorTop(int)} and {@link IOverlayStyle#borderColorBottom(int)} instead
+     */
+    @Deprecated
+    default IOverlayStyle borderColor(int color) {
+        return this;
+    }
+
+    /**
      * The color of the border (if used). This is a 32-bit color value.
      * You can use alpha if you want transparency. For example
      * 0xFFFFFFFF is pure white, 0x22FF0000 is a very faint transparent red.
      */
-    IOverlayStyle borderColorTop(int color);
-    IOverlayStyle borderColorBottom(int color);
+    default IOverlayStyle borderColorTop(int color) {
+        return this;
+    }
+
+    default IOverlayStyle borderColorBottom(int color) {
+        return this;
+    }
 
     int getBorderColorTop();
     int getBorderColorBottom();
