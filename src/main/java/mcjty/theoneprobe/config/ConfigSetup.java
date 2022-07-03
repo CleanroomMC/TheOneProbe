@@ -27,7 +27,7 @@ public class ConfigSetup {
 
     public static Configuration mainConfig;
 
-    public static String CATEGORY_THEONEPROBE = "theoneprobe";
+    public static String CATEGORY_THEONEPROBE = TheOneProbe.MODID;
     public static String CATEGORY_PROVIDERS = "providers";
     public static String CATEGORY_CLIENT = "client";
 

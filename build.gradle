@@ -70,10 +70,10 @@ minecraft {
 
 dependencies {
     deobfCompile "mezz.jei:jei_${jei_version}"
-    deobfCompile "curse.maven:tesla-244651:2487959"
+    compileOnly "curse.maven:tesla-244651:2487959"
     deobfCompile "curse.maven:redstoneflux-270789:2623090"
-    deobfCompile "curse.maven:enderio1-64578:3328811"
-    deobfCompile "curse.maven:endercore1-231868:2972849"
+    compileOnly "curse.maven:enderio1-64578:3328811"
+    compileOnly "curse.maven:endercore1-231868:2972849"
 }
 
 jar {

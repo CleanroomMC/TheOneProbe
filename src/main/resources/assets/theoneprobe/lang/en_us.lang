@@ -2,4 +2,6 @@ key.toggleLiquids=Toggle Liquid View
 key.toggleVisible=Visibility Toggle
 key.categories.theoneprobe=The One Probe
 
+theoneprobe.message.configure_top=§6Configure TOP style with /topcfg
+
 theoneprobe.provider.error=Error:

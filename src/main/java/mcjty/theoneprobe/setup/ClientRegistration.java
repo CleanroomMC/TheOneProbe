@@ -1,6 +1,5 @@
 package mcjty.theoneprobe.setup;
 
-
 import mcjty.theoneprobe.items.ModItems;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.fml.common.Mod;

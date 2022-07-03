@@ -19,7 +19,6 @@ public class ProbeNote extends Item {
     public ProbeNote() {
         setTranslationKey(TheOneProbe.MODID + ".probenote");
         setRegistryName("probenote");
-        setCreativeTab(TheOneProbe.tabProbe);
         setMaxStackSize(1);
     }
 

@@ -8,7 +8,6 @@ import mcjty.theoneprobe.keys.KeyBindings;
 import mcjty.theoneprobe.rendering.OverlayRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -17,7 +16,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-import static mcjty.theoneprobe.config.ConfigSetup.*;
+import javax.annotation.Nonnull;
 
 public class ClientForgeEventHandlers {
 
@@ -26,49 +25,26 @@ public class ClientForgeEventHandlers {
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) {
         if (ignoreNextGuiClose) {
-            GuiScreen current = Minecraft.getMinecraft().currentScreen;
-            if (event.getGui() == null && (current instanceof GuiConfig)) {
+            if (event.getGui() == null && (Minecraft.getMinecraft().currentScreen instanceof GuiConfig)) {
                 ignoreNextGuiClose = false;
-                // We don't want our gui to be closed for a new 'null' guil
+                // We don't want our gui to be closed for a new 'null' gui
                 event.setCanceled(true);
             }
         }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
-    public void renderGameOverlayEvent(RenderGameOverlayEvent.Pre event) {
-        if (event.getType() != RenderGameOverlayEvent.ElementType.TEXT) {
-            return;
-        }
+    public void renderGameOverlayEvent(@Nonnull RenderGameOverlayEvent.Pre event) {
+        if (event.getType() != RenderGameOverlayEvent.ElementType.TEXT) return;
 
         if (ConfigSetup.holdKeyToMakeVisible) {
-            if (!KeyBindings.toggleVisible.isKeyDown()) {
-                return;
-            }
-        } else {
-            if (!ConfigSetup.isVisible) {
-                return;
-            }
-        }
+            if (!KeyBindings.toggleVisible.isKeyDown()) return;
+        } else if (!ConfigSetup.isVisible) return;
 
-        if (hasItemInEitherHand(ModItems.creativeProbe)) {
-            OverlayRenderer.renderHUD(ProbeMode.DEBUG, event.getPartialTicks());
-        } else {
-            switch (ConfigSetup.needsProbe) {
-                case PROBE_NOTNEEDED:
-                case PROBE_NEEDEDFOREXTENDED:
-                    OverlayRenderer.renderHUD(getModeForPlayer(), event.getPartialTicks());
-                    break;
-                case PROBE_NEEDED:
-                case PROBE_NEEDEDHARD:
-                    if (ModItems.hasAProbeSomewhere(Minecraft.getMinecraft().player)) {
-                        OverlayRenderer.renderHUD(getModeForPlayer(), event.getPartialTicks());
-                    }
-                    break;
-            }
-        }
+        OverlayRenderer.renderHUD(hasItemInEitherHand(ModItems.creativeProbe) ? ProbeMode.DEBUG : getModeForPlayer(), event.getPartialTicks());
     }
 
+    @Nonnull
     private ProbeMode getModeForPlayer() {
         EntityPlayerSP player = Minecraft.getMinecraft().player;
         if (ConfigSetup.extendedInMain) {
@@ -77,16 +53,17 @@ public class ClientForgeEventHandlers {
         return player.isSneaking() ? ProbeMode.EXTENDED : ProbeMode.NORMAL;
     }
 
-    private boolean hasItemInEitherHand(Item item) {
-        ItemStack mainHeldItem = Minecraft.getMinecraft().player.getHeldItem(EnumHand.MAIN_HAND);
-        ItemStack offHeldItem = Minecraft.getMinecraft().player.getHeldItem(EnumHand.OFF_HAND);
-        return (mainHeldItem != null && mainHeldItem.getItem() == item) ||
-                (offHeldItem != null && offHeldItem.getItem() == item);
+    private boolean hasItemInEitherHand(@Nonnull Item item) {
+        ItemStack mainHand = Minecraft.getMinecraft().player.getHeldItem(EnumHand.MAIN_HAND);
+        ItemStack offHand = Minecraft.getMinecraft().player.getHeldItem(EnumHand.OFF_HAND);
+        //noinspection ConstantConditions
+        return (mainHand != null && mainHand.getItem() == item) ||
+                (offHand != null && offHand.getItem() == item);
     }
 
-
-    private boolean hasItemInMainHand(Item item) {
-        ItemStack mainHeldItem = Minecraft.getMinecraft().player.getHeldItem(EnumHand.MAIN_HAND);
-        return mainHeldItem != null && mainHeldItem.getItem() == item;
+    private boolean hasItemInMainHand(@Nonnull Item item) {
+        ItemStack mainHand = Minecraft.getMinecraft().player.getHeldItem(EnumHand.MAIN_HAND);
+        //noinspection ConstantConditions
+        return mainHand != null && mainHand.getItem() == item;
     }
 }

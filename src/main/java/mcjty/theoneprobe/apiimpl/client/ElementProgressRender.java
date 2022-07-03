@@ -1,22 +1,19 @@
 package mcjty.theoneprobe.apiimpl.client;
 
-import io.netty.buffer.ByteBuf;
+import mcjty.theoneprobe.TheOneProbe;
 import mcjty.theoneprobe.api.IProgressStyle;
 import mcjty.theoneprobe.api.NumberFormat;
 import mcjty.theoneprobe.apiimpl.elements.ElementProgress;
-import mcjty.theoneprobe.network.NetworkTools;
 import mcjty.theoneprobe.rendering.RenderHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 
-import java.awt.*;
-
 public class ElementProgressRender {
 
     private static final ResourceLocation ICONS = new ResourceLocation("textures/gui/icons.png");
-    private static final ResourceLocation SPRITES = new ResourceLocation("theoneprobe", "textures/gui/sprites.png");
+    private static final ResourceLocation SPRITES = new ResourceLocation(TheOneProbe.MODID, "textures/gui/sprites.png");
 
 
     public static void render(IProgressStyle style, long current, long max, int x, int y, int w, int h) {

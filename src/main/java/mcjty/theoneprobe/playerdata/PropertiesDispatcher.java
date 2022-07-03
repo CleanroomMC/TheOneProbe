@@ -6,19 +6,22 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 
+import javax.annotation.Nonnull;
+
 public class PropertiesDispatcher implements ICapabilityProvider, INBTSerializable<NBTTagCompound> {
 
-    private PlayerGotNote playerGotNote = new PlayerGotNote();
+    private PlayerReceivedMessage playerReceivedMessage = new PlayerReceivedMessage();
 
     @Override
-    public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
         return capability == PlayerProperties.PLAYER_GOT_NOTE;
     }
 
     @Override
-    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
         if (capability == PlayerProperties.PLAYER_GOT_NOTE) {
-            return (T) playerGotNote;
+            //noinspection unchecked
+            return (T) playerReceivedMessage;
         }
         return null;
     }
@@ -26,12 +29,12 @@ public class PropertiesDispatcher implements ICapabilityProvider, INBTSerializab
     @Override
     public NBTTagCompound serializeNBT() {
         NBTTagCompound nbt = new NBTTagCompound();
-        playerGotNote.saveNBTData(nbt);
+        playerReceivedMessage.saveNBTData(nbt);
         return nbt;
     }
 
     @Override
     public void deserializeNBT(NBTTagCompound nbt) {
-        playerGotNote.loadNBTData(nbt);
+        playerReceivedMessage.loadNBTData(nbt);
     }
 }
