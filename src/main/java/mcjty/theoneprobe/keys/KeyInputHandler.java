@@ -8,14 +8,8 @@ public class KeyInputHandler {
 
     @SubscribeEvent
     public void onKeyInput(InputEvent.KeyInputEvent event) {
-        if (KeyBindings.toggleLiquids.isPressed()) {
-            ConfigSetup.setLiquids(!ConfigSetup.showLiquids);
-        } else if (KeyBindings.toggleVisible.isPressed()) {
-            if (!ConfigSetup.holdKeyToMakeVisible) {
+        if (KeyBindings.toggleVisible.isPressed() && !ConfigSetup.holdKeyToMakeVisible) {
                 ConfigSetup.setVisible(!ConfigSetup.isVisible);
-            }
-//        } else if (KeyBindings.generateLag.isPressed()) {
-//            PacketHandler.INSTANCE.sendToServer(new PacketGenerateLag());
         }
     }
 }

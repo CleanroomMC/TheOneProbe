@@ -52,7 +52,7 @@ public class ForgeEventHandlers {
 
     @SubscribeEvent
     public void onPlayerLoggedIn(net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent event) {
-        if (ConfigSetup.spawnNote) {
+        if (ConfigSetup.firstJoinMessage) {
             PlayerReceivedMessage received = PlayerProperties.didPlayerReceiveMessage(event.player);
             if (received != null && !received.wasMessageReceived()) {
                 event.player.sendMessage(new TextComponentTranslation("theoneprobe.message.configure_top"));

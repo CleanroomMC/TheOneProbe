@@ -96,7 +96,7 @@ public class OverlayRenderer {
         final Vec3d vec31 = entity.getLook(partialTicks);
         final Vec3d end = start.add(vec31.x * dist, vec31.y * dist, vec31.z * dist);
 
-        mouseOver = entity.getEntityWorld().rayTraceBlocks(start, end, ConfigSetup.showLiquids);
+        mouseOver = entity.getEntityWorld().rayTraceBlocks(start, end, entity.isSneaking());
         if (mouseOver == null) return;
 
         if (mouseOver.typeOfHit == RayTraceResult.Type.BLOCK) {

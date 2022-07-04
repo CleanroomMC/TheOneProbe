@@ -30,7 +30,7 @@ public class DebugProbeInfoProvider implements IProbeInfoProvider {
 
     @Override
     public void addProbeInfo(@Nonnull ProbeMode mode, @Nonnull IProbeInfo probeInfo, @Nonnull EntityPlayer player, @Nonnull World world, @Nonnull IBlockState blockState, @Nonnull IProbeHitData data) {
-        if (mode == ProbeMode.DEBUG && ConfigSetup.showDebugInfo) {
+        if (mode == ProbeMode.DEBUG) {
             showDebugInfo(probeInfo, world, blockState, data.getPos(), blockState.getBlock(), data.getSideHit());
         }
     }

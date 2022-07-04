@@ -143,7 +143,7 @@ public class DefaultProbeInfoEntityProvider implements IProbeInfoEntityProvider 
             }
         }
 
-        if (entity instanceof EntityWolf && ConfigSetup.showCollarColor && ((EntityWolf) entity).isTamed()) {
+        if (entity instanceof EntityWolf && player.isSneaking() && ((EntityWolf) entity).isTamed()) {
             probeInfo.text(LABEL + "{*theoneprobe.provider.entity.collar*} " + INFO + ((EntityWolf) entity).getCollarColor().getName());
         }
     }

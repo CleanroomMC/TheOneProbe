@@ -1,6 +1,5 @@
 package mcjty.theoneprobe.config;
 
-
 import mcjty.theoneprobe.TheOneProbe;
 import mcjty.theoneprobe.api.IOverlayStyle;
 import mcjty.theoneprobe.api.IProbeConfig;
@@ -35,17 +34,15 @@ public class ConfigSetup {
     public static final int PROBE_NEEDED = 1;
     public static final int PROBE_NEEDEDHARD = 2;
     public static final int PROBE_NEEDEDFOREXTENDED = 3;
-    public static int needsProbe = PROBE_NEEDEDFOREXTENDED;
+    public static int needsProbe = PROBE_NOTNEEDED;
 
-    public static boolean extendedInMain = false;
     public static NumberFormat rfFormat = NumberFormat.COMPACT;
     public static NumberFormat tankFormat = NumberFormat.COMPACT;
     public static int timeout = 300;
     public static int waitingForServerTimeout = 2000;
     public static int maxPacketToServer = 20000;
 
-    public static boolean supportBaubles = true;
-    public static boolean spawnNote = true;
+    public static boolean firstJoinMessage = true;
 
     // Chest related settings
     public static int showSmallChestContentsWithoutSneaking = 0;
@@ -59,12 +56,9 @@ public class ConfigSetup {
     private static Set<ResourceLocation> dontSendNBTSet = null;
 
     public static float probeDistance = 6;
-    public static boolean showLiquids = false;
     public static boolean isVisible = true;
     public static boolean compactEqualStacks = true;
     public static boolean holdKeyToMakeVisible = false;
-
-    public static boolean showDebugInfo = true;
 
     private static int leftX = 5;
     private static int topY = 5;
@@ -94,7 +88,7 @@ public class ConfigSetup {
     public static int tankbarBorderColorBottom = 0xff28007F;
 
     public static Map<TextStyleClass, String> defaultTextStyleClasses = new HashMap<>();
-    public static Map<TextStyleClass, String> textStyleClasses = new HashMap<>();
+    public static Map<TextStyleClass, String> textStyleClasses;
 
     static {
         defaultTextStyleClasses.put(NAME, "white");
@@ -110,10 +104,8 @@ public class ConfigSetup {
         textStyleClasses = new HashMap<>(defaultTextStyleClasses);
     }
 
-    public static boolean showCollarColor = true;
-
     private static IOverlayStyle defaultOverlayStyle;
-    private static ProbeConfig defaultConfig = new ProbeConfig();
+    private static final ProbeConfig defaultConfig = new ProbeConfig();
     private static IProbeConfig realConfig;
 
     public static ProbeConfig getDefaultConfig() {
@@ -129,11 +121,7 @@ public class ConfigSetup {
     }
 
     public static void init(Configuration cfg) {
-        needsProbe = cfg.getInt("needsProbe", CATEGORY_THEONEPROBE, needsProbe, 0, 3, "Is the probe needed to show the tooltip? 0 = no, 1 = yes, 2 = yes and clients cannot override, 3 = probe needed for extended info only");
-        extendedInMain = cfg.getBoolean("extendedInMain", CATEGORY_THEONEPROBE, extendedInMain, "If true the probe will automatically show extended information without the need to sneak");
-        supportBaubles = cfg.getBoolean("supportBaubles", CATEGORY_THEONEPROBE, supportBaubles, "If true there will be a bauble version of the probe if baubles is present");
-        spawnNote = cfg.getBoolean("spawnNote", CATEGORY_THEONEPROBE, spawnNote, "If true there will be a readme note for first-time players");
-        showCollarColor = cfg.getBoolean("showCollarColor", CATEGORY_THEONEPROBE, showCollarColor, "If true show the color of the collar of a wolf");
+        firstJoinMessage = cfg.getBoolean("spawnNote", CATEGORY_THEONEPROBE, firstJoinMessage, "If true message will be sent first-time players");
         defaultConfig.setRFMode(cfg.getInt("showRF", CATEGORY_THEONEPROBE, defaultConfig.getRFMode(), 0, 2, "How to display RF: 0 = do not show, 1 = show in a bar, 2 = show as text"));
         defaultConfig.setTankMode(cfg.getInt("showTank", CATEGORY_THEONEPROBE, defaultConfig.getTankMode(), 0, 2, "How to display tank contents: 0 = do not show, 1 = show in a bar, 2 = show as text"));
         int fmt = cfg.getInt("rfFormat", CATEGORY_THEONEPROBE, rfFormat.ordinal(), 0, 2, "Format for displaying RF: 0 = full, 1 = compact, 2 = comma separated");
@@ -146,7 +134,6 @@ public class ConfigSetup {
         probeDistance = cfg.getFloat("probeDistance", CATEGORY_THEONEPROBE, probeDistance, 0.1f, 200f, "Distance at which the probe works");
         initDefaultConfig(cfg);
 
-        showDebugInfo = cfg.getBoolean("showDebugInfo", CATEGORY_THEONEPROBE, showDebugInfo, "If true show debug info with creative probe");
         compactEqualStacks = cfg.getBoolean("compactEqualStacks", CATEGORY_THEONEPROBE, compactEqualStacks, "If true equal stacks will be compacted in the chest contents overlay");
         rfbarFilledColor = parseColor(cfg.getString("rfbarFilledColor", CATEGORY_THEONEPROBE, Integer.toHexString(rfbarFilledColor), "Color for the RF bar"));
         rfbarAlternateFilledColor = parseColor(cfg.getString("rfbarAlternateFilledColor", CATEGORY_THEONEPROBE, Integer.toHexString(rfbarAlternateFilledColor), "Alternate color for the RF bar"));
@@ -184,7 +171,6 @@ public class ConfigSetup {
         defaultConfig.showAnimalOwnerSetting(IProbeConfig.ConfigMode.values()[cfg.getInt("showAnimalOwnerSetting", CATEGORY_THEONEPROBE, defaultConfig.getAnimalOwnerSetting().ordinal(), 0, 2, "Show animal owner setting (0 = not, 1 = always, 2 = sneak)")]);
         defaultConfig.showHorseStatSetting(IProbeConfig.ConfigMode.values()[cfg.getInt("showHorseStatSetting", CATEGORY_THEONEPROBE, defaultConfig.getHorseStatSetting().ordinal(), 0, 2, "Show horse stats setting (0 = not, 1 = always, 2 = sneak)")]);
         defaultConfig.showSilverfish(IProbeConfig.ConfigMode.values()[cfg.getInt("showSilverfish",CATEGORY_THEONEPROBE,defaultConfig.getShowSilverfish().ordinal(),0,2,"Reveal monster eggs (0 = not, 1 = always, 2 = sneak)")]);
-
     }
 
     public static void setProbeNeeded(int probeNeeded) {
@@ -205,7 +191,6 @@ public class ConfigSetup {
         boxFillColor = parseColor(cfg.getString("boxFillColor", CATEGORY_CLIENT, Integer.toHexString(boxFillColor), "Color of the box (0 to disable)"));
         boxThickness = cfg.getInt("boxThickness", CATEGORY_CLIENT, boxThickness, 0, 20, "Thickness of the border of the box (0 to disable)");
         boxOffset = cfg.getInt("boxOffset", CATEGORY_CLIENT, boxOffset, 0, 20, "How much the border should be offset (i.e. to create an 'outer' border)");
-        showLiquids = cfg.getBoolean("showLiquids", CATEGORY_CLIENT, showLiquids, "If true show liquid information when the probe hits liquid first");
         isVisible = cfg.getBoolean("isVisible", CATEGORY_CLIENT, isVisible, "Toggle default probe visibility (client can override)");
         holdKeyToMakeVisible = cfg.getBoolean("holdKeyToMakeVisible", CATEGORY_CLIENT, holdKeyToMakeVisible, "If true then the probe hotkey must be held down to show the tooltip");
         compactEqualStacks = cfg.getBoolean("compactEqualStacks", CATEGORY_CLIENT, compactEqualStacks, "If true equal stacks will be compacted in the chest contents overlay");
@@ -222,28 +207,12 @@ public class ConfigSetup {
             newformat.put(styleClass, style);
         }
         textStyleClasses = newformat;
-
-        extendedInMain = cfg.getBoolean("extendedInMain", CATEGORY_CLIENT, extendedInMain, "If true the probe will automatically show extended information without the need to sneak");
     }
 
     public static void setTextStyle(TextStyleClass styleClass, String style) {
         Configuration cfg = mainConfig;
         ConfigSetup.textStyleClasses.put(styleClass, style);
         cfg.get(CATEGORY_CLIENT, "textStyle" + styleClass.getReadableName(), style).set(style);
-        cfg.save();
-    }
-
-    public static void setExtendedInMain(boolean extendedInMain) {
-        Configuration cfg = mainConfig;
-        ConfigSetup.extendedInMain = extendedInMain;
-        cfg.get(CATEGORY_CLIENT, "extendedInMain", extendedInMain).set(extendedInMain);
-        cfg.save();
-    }
-
-    public static void setLiquids(boolean liquids) {
-        Configuration cfg = mainConfig;
-        ConfigSetup.showLiquids = liquids;
-        cfg.get(CATEGORY_CLIENT, "showLiquids", showLiquids).set(liquids);
         cfg.save();
     }
 

@@ -47,9 +47,6 @@ public class ClientForgeEventHandlers {
     @Nonnull
     private ProbeMode getModeForPlayer() {
         EntityPlayerSP player = Minecraft.getMinecraft().player;
-        if (ConfigSetup.extendedInMain) {
-           return ProbeMode.EXTENDED;
-        }
         return player.isSneaking() ? ProbeMode.EXTENDED : ProbeMode.NORMAL;
     }
 
