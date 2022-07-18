@@ -20,8 +20,7 @@ import java.util.function.Function;
         version = TheOneProbe.VERSION,
         dependencies = "required-after:forge@[14.23.5.2847,);" + "after:tesla",
         acceptedMinecraftVersions = "[1.12.2,1.13)",
-        guiFactory = "mcjty.theoneprobe.config.TopModGuiFactory",
-        clientSideOnly = true)
+        guiFactory = "mcjty.theoneprobe.config.TopModGuiFactory")
 public class TheOneProbe {
 
     public static final String MODID = "theoneprobe";

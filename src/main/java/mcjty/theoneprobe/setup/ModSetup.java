@@ -14,12 +14,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -32,9 +30,6 @@ public class ModSetup {
 
     private Logger logger;
     public static File modConfigDir;
-
-    public static boolean tesla = false;
-    public static boolean redstoneflux = false;
 
     public void preInit(@Nonnull FMLPreInitializationEvent e) {
         logger = e.getModLog();
@@ -52,25 +47,11 @@ public class ModSetup {
 
         modConfigDir = e.getModConfigurationDirectory();
         ConfigSetup.init();
-
-        setupModCompat();
     }
 
     @Nonnull
     public Logger getLogger() {
         return logger;
-    }
-
-    private void setupModCompat() {
-        tesla = Loader.isModLoaded("tesla");
-        if (tesla) {
-            logger.log(Level.INFO, "The One Probe Detected TESLA: enabling support");
-        }
-
-        redstoneflux = Loader.isModLoaded("redstoneflux");
-        if (redstoneflux) {
-            logger.log(Level.INFO, "The One Probe Detected RedstoneFlux: enabling support");
-        }
     }
 
     private static void registerCapabilities() {
