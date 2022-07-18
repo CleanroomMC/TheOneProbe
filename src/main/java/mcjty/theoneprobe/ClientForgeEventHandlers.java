@@ -3,7 +3,6 @@ package mcjty.theoneprobe;
 import mcjty.theoneprobe.api.ProbeMode;
 import mcjty.theoneprobe.config.ConfigSetup;
 import mcjty.theoneprobe.gui.GuiConfig;
-import mcjty.theoneprobe.items.ModItems;
 import mcjty.theoneprobe.keys.KeyBindings;
 import mcjty.theoneprobe.rendering.OverlayRenderer;
 import net.minecraft.client.Minecraft;
@@ -41,13 +40,9 @@ public class ClientForgeEventHandlers {
             if (!KeyBindings.toggleVisible.isKeyDown()) return;
         } else if (!ConfigSetup.isVisible) return;
 
-        OverlayRenderer.renderHUD(hasItemInEitherHand(ModItems.creativeProbe) ? ProbeMode.DEBUG : getModeForPlayer(), event.getPartialTicks());
-    }
-
-    @Nonnull
-    private ProbeMode getModeForPlayer() {
         EntityPlayerSP player = Minecraft.getMinecraft().player;
-        return player.isSneaking() ? ProbeMode.EXTENDED : ProbeMode.NORMAL;
+
+        OverlayRenderer.renderHUD(player.isSneaking() ? (player.isCreative() ? ProbeMode.DEBUG : ProbeMode.EXTENDED) : ProbeMode.NORMAL, event.getPartialTicks());
     }
 
     private boolean hasItemInEitherHand(@Nonnull Item item) {

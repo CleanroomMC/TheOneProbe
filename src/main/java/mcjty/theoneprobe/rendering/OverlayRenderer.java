@@ -8,15 +8,9 @@ import mcjty.theoneprobe.apiimpl.ProbeHitEntityData;
 import mcjty.theoneprobe.apiimpl.ProbeInfo;
 import mcjty.theoneprobe.apiimpl.elements.ElementProgress;
 import mcjty.theoneprobe.apiimpl.elements.ElementText;
-import mcjty.theoneprobe.apiimpl.providers.DefaultProbeInfoEntityProvider;
-import mcjty.theoneprobe.apiimpl.providers.DefaultProbeInfoProvider;
 import mcjty.theoneprobe.apiimpl.styles.ProgressStyle;
 import mcjty.theoneprobe.config.ConfigSetup;
-import mcjty.theoneprobe.network.PacketGetEntityInfo;
-import mcjty.theoneprobe.network.PacketGetInfo;
-import mcjty.theoneprobe.network.PacketHandler;
 import mcjty.theoneprobe.network.ThrowableIdentity;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -26,7 +20,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
@@ -41,6 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static mcjty.theoneprobe.api.TextStyleClass.ERROR;
+import static mcjty.theoneprobe.api.TextStyleClass.LABEL;
 
 public class OverlayRenderer {
 
@@ -138,6 +132,8 @@ public class OverlayRenderer {
 
     private static void renderHUDEntity(ProbeMode mode, @Nonnull RayTraceResult mouseOver, double sw, double sh) {
         Entity entity = mouseOver.entityHit;
+        EntityPlayerSP player = Minecraft.getMinecraft().player;
+
         if (entity == null) return;
         if (entity instanceof MultiPartEntityPart) {
             MultiPartEntityPart part = (MultiPartEntityPart) entity;
@@ -149,60 +145,30 @@ public class OverlayRenderer {
         // We can't show info for this entity
         if (EntityList.getEntityString(entity) == null && !(entity instanceof EntityPlayer)) return;
 
-        final UUID uuid = entity.getPersistentID();
+        ProbeInfo info = TheOneProbe.theOneProbeImp.create();
+        final IProbeHitEntityData data = new ProbeHitEntityData(mouseOver.hitVec);
 
-        final EntityPlayerSP player = Minecraft.getMinecraft().player;
-        final long time = System.currentTimeMillis();
+        IProbeConfig config = TheOneProbe.theOneProbeImp.createProbeConfig();
+        for (IProbeConfigProvider provider : TheOneProbe.theOneProbeImp.getConfigProviders()) provider.getProbeConfig(config, player, player.world, entity, data);
+        ConfigSetup.setRealConfig(config);
 
-        Pair<Long, ProbeInfo> cacheEntry = cachedEntityInfo.get(uuid);
-        if (cacheEntry == null || cacheEntry.getValue() == null) {
-
-            // To make sure we don't ask it too many times before the server got a chance to send the answer
-            // we insert a dummy entry here for a while
-            if (cacheEntry == null || time >= cacheEntry.getLeft()) {
-                cachedEntityInfo.put(uuid, Pair.of(time + 500, null));
-                requestEntityInfo(mode, mouseOver, entity, player);
+        for (IProbeInfoEntityProvider provider : TheOneProbe.theOneProbeImp.getEntityProviders()) {
+            try {
+                provider.addProbeEntityInfo(mode, info, player, player.world, entity, data);
+            } catch (Throwable e) {
+                ThrowableIdentity.registerThrowable(e);
+                info.text(LABEL + "{*theoneprobe.provider.error*} " + ERROR + provider.getID());
             }
-
-            if (lastPair != null && time < lastPairTime + ConfigSetup.timeout) {
-                renderElements(lastPair.getRight(), ConfigSetup.getDefaultOverlayStyle(), sw, sh, null);
-                lastRenderedTime = time;
-            } else if (ConfigSetup.waitingForServerTimeout > 0 && lastRenderedTime != -1 && time > lastRenderedTime + ConfigSetup.waitingForServerTimeout) {
-                // It has been a while. Show some info on client that we are
-                // waiting for server information
-                ProbeInfo info = getWaitingEntityInfo(mode, mouseOver, entity, player);
-                registerProbeInfo(uuid, info);
-                lastPair = Pair.of(time, info);
-                lastPairTime = time;
-                renderElements(lastPair.getRight(), ConfigSetup.getDefaultOverlayStyle(), sw, sh, null);
-                lastRenderedTime = time;
-            }
-        } else {
-            if (time > cacheEntry.getLeft() + ConfigSetup.timeout) {
-                // This info is slightly old. Update it
-
-                // To make sure we don't ask it too many times before the server got a chance to send the answer
-                // we increase the time a bit here
-                cachedEntityInfo.put(uuid, Pair.of(time + 500, cacheEntry.getRight()));
-                requestEntityInfo(mode, mouseOver, entity, player);
-            }
-            renderElements(cacheEntry.getRight(), ConfigSetup.getDefaultOverlayStyle(), sw, sh, null);
-            lastRenderedTime = time;
-            lastPair = cacheEntry;
-            lastPairTime = time;
         }
-    }
 
-    private static void requestEntityInfo(ProbeMode mode, RayTraceResult mouseOver, Entity entity, @Nonnull EntityPlayerSP player) {
-        PacketHandler.INSTANCE.sendToServer(new PacketGetEntityInfo(player.getEntityWorld().provider.getDimension(), mode, mouseOver, entity));
+        renderElements(info, ConfigSetup.getDefaultOverlayStyle(), sw, sh, null);
     }
 
     private static void renderHUDBlock(ProbeMode mode, @Nonnull RayTraceResult mouseOver, double sw, double sh) {
         BlockPos blockPos = mouseOver.getBlockPos();
         EntityPlayerSP player = Minecraft.getMinecraft().player;
-        if (player.getEntityWorld().isAirBlock(blockPos)) return;
-
-        final long time = System.currentTimeMillis();
+        World world = player.getEntityWorld();
+        if (world.isAirBlock(blockPos)) return;
 
         IElement damageElement = null;
         if (ConfigSetup.showBreakProgress > 0) {
@@ -224,103 +190,24 @@ public class OverlayRenderer {
             }
         }
 
-        int dimension = player.getEntityWorld().provider.getDimension();
-        Pair<Integer, BlockPos> key = Pair.of(dimension, blockPos);
-        Pair<Long, ProbeInfo> cacheEntry = cachedInfo.get(key);
-        if (cacheEntry == null || cacheEntry.getValue() == null) {
-
-            // To make sure we don't ask it too many times before the server got a chance to send the answer
-            // we insert a dummy entry here for a while
-            if (cacheEntry == null || time >= cacheEntry.getLeft()) {
-                cachedInfo.put(key, Pair.of(time + 500, null));
-                requestBlockInfo(mode, mouseOver, blockPos, player);
-            }
-
-            if (lastPair != null && time < lastPairTime + ConfigSetup.timeout) {
-                renderElements(lastPair.getRight(), ConfigSetup.getDefaultOverlayStyle(), sw, sh, damageElement);
-                lastRenderedTime = time;
-            } else if (ConfigSetup.waitingForServerTimeout > 0 && lastRenderedTime != -1 && time > lastRenderedTime + ConfigSetup.waitingForServerTimeout) {
-                // It has been a while. Show some info on client that we are
-                // waiting for server information
-                ProbeInfo info = getWaitingInfo(mode, mouseOver, blockPos, player);
-                registerProbeInfo(dimension, blockPos, info);
-                lastPair = Pair.of(time, info);
-                lastPairTime = time;
-                renderElements(lastPair.getRight(), ConfigSetup.getDefaultOverlayStyle(), sw, sh, damageElement);
-                lastRenderedTime = time;
-            }
-        } else {
-            if (time > cacheEntry.getLeft() + ConfigSetup.timeout) {
-                // This info is slightly old. Update it
-
-                // To make sure we don't ask it too many times before the server got a chance to send the answer
-                // we increase the time a bit here
-                cachedInfo.put(key, Pair.of(time + 500, cacheEntry.getRight()));
-                requestBlockInfo(mode, mouseOver, blockPos, player);
-            }
-            renderElements(cacheEntry.getRight(), ConfigSetup.getDefaultOverlayStyle(), sw, sh, damageElement);
-            lastRenderedTime = time;
-            lastPair = cacheEntry;
-            lastPairTime = time;
-        }
-    }
-
-    // Information for when the server is laggy
-    @Nonnull
-    private static ProbeInfo getWaitingInfo(ProbeMode mode, RayTraceResult mouseOver, BlockPos blockPos, @Nonnull EntityPlayerSP player) {
-        ProbeInfo probeInfo = TheOneProbe.theOneProbeImp.create();
-
-        World world = player.getEntityWorld();
-        IBlockState blockState = world.getBlockState(blockPos);
-        Block block = blockState.getBlock();
-        ItemStack pickBlock = block.getPickBlock(blockState, mouseOver, world, blockPos, player);
-        IProbeHitData data = new ProbeHitData(blockPos, mouseOver.hitVec, mouseOver.sideHit, pickBlock);
+        IBlockState state = world.getBlockState(blockPos);
+        ProbeInfo info = TheOneProbe.theOneProbeImp.create();
+        IProbeHitData data = new ProbeHitData(blockPos, mouseOver.hitVec, mouseOver.sideHit, state.getBlock().getPickBlock(state, mouseOver, world, blockPos, player));
 
         IProbeConfig probeConfig = TheOneProbe.theOneProbeImp.createProbeConfig();
-        try {
-            DefaultProbeInfoProvider.showStandardBlockInfo(probeConfig, mode, probeInfo, blockState, block, world, blockPos, player, data);
-        } catch (Exception e) {
-            ThrowableIdentity.registerThrowable(e);
-            probeInfo.text(ERROR + "Error (see log for details)!");
+        for (IProbeConfigProvider provider : TheOneProbe.theOneProbeImp.getConfigProviders()) provider.getProbeConfig(probeConfig, player, world, state, data);
+        ConfigSetup.setRealConfig(probeConfig);
+
+        for (IProbeInfoProvider provider : TheOneProbe.theOneProbeImp.getProviders()) {
+            try {
+                provider.addProbeInfo(mode, info, player, world, state, data);
+            } catch (Throwable e) {
+                ThrowableIdentity.registerThrowable(e);
+                info.text(LABEL + "{*theoneprobe.provider.error*} " + ERROR + provider.getID());
+            }
         }
 
-        probeInfo.text(ERROR + "Waiting for server...");
-        return probeInfo;
-    }
-
-    @Nonnull
-    private static ProbeInfo getWaitingEntityInfo(ProbeMode mode, @Nonnull RayTraceResult mouseOver, Entity entity, EntityPlayerSP player) {
-        ProbeInfo probeInfo = TheOneProbe.theOneProbeImp.create();
-        IProbeHitEntityData data = new ProbeHitEntityData(mouseOver.hitVec);
-
-        IProbeConfig probeConfig = TheOneProbe.theOneProbeImp.createProbeConfig();
-        try {
-            DefaultProbeInfoEntityProvider.showStandardInfo(mode, probeInfo, entity, probeConfig);
-        } catch (Exception e) {
-            ThrowableIdentity.registerThrowable(e);
-            probeInfo.text(ERROR + "Error (see log for details)!");
-        }
-
-        probeInfo.text(ERROR + "Waiting for server...");
-        return probeInfo;
-    }
-
-    private static void requestBlockInfo(ProbeMode mode, RayTraceResult mouseOver, BlockPos blockPos, @Nonnull EntityPlayerSP player) {
-        World world = player.getEntityWorld();
-        IBlockState blockState = world.getBlockState(blockPos);
-        Block block = blockState.getBlock();
-        ItemStack pickBlock = block.getPickBlock(blockState, mouseOver, world, blockPos, player);
-        //noinspection ConstantConditions
-        if (pickBlock == null || (!pickBlock.isEmpty() && pickBlock.getItem() == null)) {
-            // Protection for some invalid items.
-            pickBlock = ItemStack.EMPTY;
-        }
-        //noinspection ConstantConditions
-        if (pickBlock != null && (!pickBlock.isEmpty()) && ConfigSetup.getDontSendNBTSet().contains(pickBlock.getItem().getRegistryName())) {
-            pickBlock = pickBlock.copy();
-            pickBlock.setTagCompound(null);
-        }
-        PacketHandler.INSTANCE.sendToServer(new PacketGetInfo(world.provider.getDimension(), blockPos, mode, mouseOver, pickBlock));
+        renderElements(info, ConfigSetup.getDefaultOverlayStyle(), sw, sh, damageElement);
     }
 
     public static void renderOverlay(IOverlayStyle style, IProbeInfo probeInfo) {

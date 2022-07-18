@@ -6,7 +6,6 @@ import mcjty.theoneprobe.api.ElementAlignment;
 import mcjty.theoneprobe.api.IIconStyle;
 import mcjty.theoneprobe.api.IProbeInfo;
 import mcjty.theoneprobe.config.ConfigSetup;
-import mcjty.theoneprobe.items.ModItems;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -61,9 +60,6 @@ public class HarvestInfoTools {
     }
 
     public static void showCanBeHarvested(@Nonnull IProbeInfo probeInfo, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull Block block, @Nonnull EntityPlayer player) {
-        // If the player holds the probe there is no need to show harvestability information as the
-        // probe cannot harvest anything. This is only supposed to work in off hand.
-        if (ModItems.isProbeInHand(player.getHeldItemMainhand())) return;
         if (block.canHarvestBlock(world, pos, player) && world.getBlockState(pos).getBlockHardness(world, pos) >= 0) {
             probeInfo.text(OK + "{*theoneprobe.provider.harvest.harvestable*}");
         } else {

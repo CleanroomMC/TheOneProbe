@@ -18,9 +18,10 @@ import java.util.function.Function;
 @Mod(modid = TheOneProbe.MODID,
         name = TheOneProbe.NAME,
         version = TheOneProbe.VERSION,
-        dependencies = "after:forge@[14.23.5.2847,);" + "after:tesla",
+        dependencies = "required-after:forge@[14.23.5.2847,);" + "after:tesla",
         acceptedMinecraftVersions = "[1.12.2,1.13)",
-        guiFactory = "mcjty.theoneprobe.config.TopModGuiFactory")
+        guiFactory = "mcjty.theoneprobe.config.TopModGuiFactory",
+        clientSideOnly = true)
 public class TheOneProbe {
 
     public static final String MODID = "theoneprobe";

@@ -8,7 +8,6 @@ import mcjty.theoneprobe.api.IProbeInfoProvider;
 import mcjty.theoneprobe.apiimpl.TheOneProbeImp;
 import mcjty.theoneprobe.apiimpl.providers.*;
 import mcjty.theoneprobe.config.ConfigSetup;
-import mcjty.theoneprobe.network.PacketHandler;
 import mcjty.theoneprobe.playerdata.PlayerReceivedMessage;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumFacing;
@@ -53,8 +52,6 @@ public class ModSetup {
 
         modConfigDir = e.getModConfigurationDirectory();
         ConfigSetup.init();
-
-        PacketHandler.registerMessages(TheOneProbe.MODID);
 
         setupModCompat();
     }
