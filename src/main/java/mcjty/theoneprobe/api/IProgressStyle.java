@@ -8,6 +8,11 @@ import javax.annotation.Nonnull;
 public interface IProgressStyle {
 
     /**
+     * Backwards compatibility; sets top and bottom border colors to same color
+     */
+
+    IProgressStyle borderColor(int c);
+    /**
      * The color that is used for the border of the progress bar
      */
     IProgressStyle borderColorTop(int c);
