@@ -27,6 +27,17 @@ public class ProgressStyle implements IProgressStyle {
 
     private NumberFormat numberFormat = NumberFormat.FULL;
 
+
+    /**
+     * Backwards compatibility; sets top and bottom border colors to same color
+     */
+    @Override
+    public ProgressStyle borderColor(int c) {
+        this.borderColorBottom = c;
+        this.borderColorTop = c;
+        return this;
+    }
+
     /**
      * The color that is used for the border of the progress bar
      */
